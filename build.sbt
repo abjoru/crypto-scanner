@@ -11,6 +11,7 @@ lazy val catsEffectVersion = "3.3.12"
 lazy val http4sVersion     = "0.23.16"
 lazy val circeVersion      = "0.14.1"
 lazy val pureConfigVersion = "0.17.1"
+lazy val snakeyamlVersion  = "1.32"
 
 lazy val munitVersion = "0.7.29"
 
@@ -42,15 +43,18 @@ lazy val core = (project in file("core"))
       "io.circe"              %% "circe-core"      % circeVersion,
       "io.circe"              %% "circe-generic"   % circeVersion,
       "org.http4s"            %% "http4s-core"     % http4sVersion,
-      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion
+      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
+      "org.yaml"               % "snakeyaml"       % snakeyamlVersion
     )
   )
 
 lazy val testKit = (project in file("testKit"))
+  .dependsOn(ethereumApi)
   .settings(
     name := "crypto-scanner-testkit",
     libraryDependencies ++= Seq(
       "org.scalameta" %% "munit"            % munitVersion % Test,
-      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test
+      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
     )
   )

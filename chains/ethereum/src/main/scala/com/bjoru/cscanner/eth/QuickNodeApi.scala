@@ -15,7 +15,7 @@ import org.http4s.client.dsl.io.*
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
 
-import com.bjoru.cscanner.config.loadConfigFile
+import com.bjoru.cscanner.config.loadYamlFile
 import com.bjoru.cscanner.utils.{Quantity, Unit, fromWei}
 import com.bjoru.cscanner.types.{Address, Wallet, Token, TokenBalance}
 
@@ -37,7 +37,7 @@ object QuickNodeApi:
         TokenBalance(Token(name, symb, dec, Some(contr)), BigDecimal(am) / dec)
     )
 
-  def loadApi(path: Path): IO[QuickNodeApi] = loadConfigFile[QuickNodeApi](path)
+  def loadApi(path: Path): IO[QuickNodeApi] = loadYamlFile[QuickNodeApi](path)
 
   extension (api: QuickNodeApi)
 

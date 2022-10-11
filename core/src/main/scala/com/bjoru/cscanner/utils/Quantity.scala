@@ -21,7 +21,7 @@ object Quantity:
     case other               => Failure(new IllegalArgumentException(s"Invalid quantity format: $other"))
 
   private def isLongValue(v: String): Boolean = 
-    Option(v.toLong).isDefined
+    Try(v.toLong).isSuccess
 
   private def isHexValue(str: String): Boolean = str match
     case v if v.isEmpty                          => false
