@@ -30,8 +30,8 @@ object Chain:
       case Failure(er) => Left(ExceptionThrown(er))
   }
 
-trait ChainApi(chain: Chain):
+trait ChainApi(val chain: Chain):
 
-  def balances(wallets: Address*): IO[Seq[TokenBalance]]
+  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]]
 
-  def lpBalances(wallets: Address*): IO[Seq[LPTokenBalance]]
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]]

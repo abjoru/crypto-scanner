@@ -24,6 +24,10 @@ enum Xdg:
 
 lazy val homeDir = System.getProperty("user.home")
 
+final val TOKENS_FILE    = "tokens.yaml"
+final val WALLETS_FILE   = "wallets.yaml"
+final val ENDPOINTS_FILE = "endpoints.yaml"
+
 def getXdgDirectory(xdg: Xdg): Path = xdg match
   case Xdg.Data   => Paths.get(homeDir, ".local", "share")
   case Xdg.Config => Paths.get(homeDir, ".config")

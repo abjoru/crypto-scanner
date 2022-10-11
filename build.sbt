@@ -30,6 +30,17 @@ lazy val ethereumApi = (project in file("chains/ethereum"))
     )
   )
 
+lazy val elrondApi = (project in file("chains/elrond"))
+  .dependsOn(core)
+  .settings(
+    name := "crypto-scanner-elrond",
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %% "http4s-circe"        % http4sVersion,
+      "org.http4s" %% "http4s-dsl"          % http4sVersion
+    )
+  )
+
 //////////////
 // Standard //
 //////////////
@@ -49,7 +60,7 @@ lazy val core = (project in file("core"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(ethereumApi)
+  .dependsOn(ethereumApi, elrondApi)
   .settings(
     name := "crypto-scanner-testkit",
     libraryDependencies ++= Seq(
