@@ -19,6 +19,17 @@ lazy val munitVersion = "0.7.29"
 // Modules //
 /////////////
 
+lazy val bitcoinApi = (project in file("chains/bitcoin"))
+  .dependsOn(core)
+  .settings(
+    name := "crypto-scanner-bitcoin",
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %% "http4s-circe"        % http4sVersion,
+      "org.http4s" %% "http4s-dsl"          % http4sVersion
+    )
+  )
+
 lazy val ethereumApi = (project in file("chains/ethereum"))
   .dependsOn(core)
   .settings(
@@ -34,6 +45,17 @@ lazy val elrondApi = (project in file("chains/elrond"))
   .dependsOn(core)
   .settings(
     name := "crypto-scanner-elrond",
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %% "http4s-circe"        % http4sVersion,
+      "org.http4s" %% "http4s-dsl"          % http4sVersion
+    )
+  )
+
+lazy val dogecoinApi = (project in file("chains/dogecoin"))
+  .dependsOn(core)
+  .settings(
+    name := "crypto-scanner-dogecoin",
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-ember-client" % http4sVersion,
       "org.http4s" %% "http4s-circe"        % http4sVersion,
@@ -60,7 +82,7 @@ lazy val core = (project in file("core"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(ethereumApi, elrondApi)
+  .dependsOn(ethereumApi, elrondApi, bitcoinApi, dogecoinApi)
   .settings(
     name := "crypto-scanner-testkit",
     libraryDependencies ++= Seq(

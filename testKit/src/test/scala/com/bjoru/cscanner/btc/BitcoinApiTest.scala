@@ -1,4 +1,4 @@
-package com.bjoru.cscanner.eth
+package com.bjoru.cscanner.btc
 
 import cats.syntax.show.given
 import cats.effect.IO
@@ -10,14 +10,14 @@ import com.bjoru.cscanner.{*, given}
 import com.bjoru.cscanner.types.{Wallet, Address}
 import com.bjoru.cscanner.config.{loadWallets, loadTokens}
 
-class EthereumApiTest extends CatsEffectSuite:
+class BitcoinApiTest extends CatsEffectSuite:
 
   val cfgDir  = getXdgDirectory(Xdg.Config) </> "crypto-scanner"
-  val wallets = loadWallets(cfgDir </> "wallets.yaml").map(_.filter(_.chain == Chain.Ethereum))
+  val wallets = loadWallets(cfgDir </> "wallets.yaml").map(_.filter(_.chain == Chain.Bitcoin))
 
-  test("Query eth wallet balances") {
+  test("Query bitcoin wallet balance") {
     for ws <- wallets
-        rs <- EthereumApi(cfgDir).balances(ws.toSet)
+        rs <- BitcoinApi(cfgDir).balances(ws.toSet)
         _  <- IO(rs.flatMap(_._2).foreach(println))
     yield assert(rs.nonEmpty)
   }

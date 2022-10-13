@@ -1,6 +1,7 @@
 package com.bjoru.cscanner.types
 
 import cats.Show
+import cats.syntax.show.given
 
 import io.circe.*
 
@@ -15,5 +16,5 @@ object TokenBalance:
 
   given Show[TokenBalance] = Show.show {
     case TokenBalance(t, b) =>
-      s"${b.setScale(4, RoundingMode.HALF_UP)} ${t.symbol.toUpperCase}"
+      s"${b.setScale(4, RoundingMode.HALF_UP)} ${t.symbol.show}"
   }

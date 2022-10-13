@@ -22,15 +22,16 @@ class ElrondProvider(endpoint: Endpoint):
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("name").as[String]
-        symb <- c.downField("ticker").as[String]
+        symb <- c.downField("ticker").as[Symbol]
         dec  <- c.downField("decimals").as[Int]
         bal  <- c.downField("balance").as[String]
-        res  <- Quantity.decodeTokenQuantity(Token(name, symb, dec, None), bal).circeResult(c)
+        usd  <- c.downField("valueUsd").as[Double]
+        res  <- Quantity.decodeTokenQuantity(Token(symb, name, dec, None, Some(usd)), bal).circeResult(c)
     yield res
   }
 
   def getTokens(wallet: Wallet)(using client: Client[IO]): IO[Seq[TokenBalance]] =
-    val req = GET(endpoint.uri / "account" / wallet.address.stringValue / "tokens")
+    val req = GET(endpoint.uri / "accounts" / wallet.address.stringValue / "tokens")
     client.expect(req)(jsonOf[IO, Seq[TokenBalance]])
 
 object ElrondProvider:

@@ -22,11 +22,11 @@ class QuickNodeProvider(endpoint: Endpoint):
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("name").as[String]
-        symb <- c.downField("symbol").as[String]
+        symb <- c.downField("symbol").as[Symbol]
         dec  <- c.downField("decimals").as[Int]
         addr <- c.downField("address").as[Address]
         bal  <- c.downField("amount").as[String]
-        res  <- Quantity.decodeTokenQuantity(Token(name, symb, dec, Some(addr)), bal).circeResult(c)
+        res  <- Quantity.decodeTokenQuantity(Token(symb, name, dec, Some(addr)), bal).circeResult(c)
     yield res
   }
 
@@ -61,11 +61,13 @@ class QuickNodeProvider(endpoint: Endpoint):
 
   def getTokenBalance(wallet: Wallet, tokens: Set[Token])(using client: Client[IO]): IO[Seq[TokenBalance]] =
     val req = POST(Request.TokenBalances(wallet, tokens).asJson, endpoint.uri / endpoint.apiKey)
-    client.expect(req)(jsonOf[IO, Seq[TokenBalance]])
+    client.expect(req)(jsonOf[IO, Json]).flatMap { json =>
+      IO.fromEither(json.hcursor.downField("result").downField("assets").as[Seq[TokenBalance]])
+    }
 
   def tokenList(tokens: Set[Token], limit: Option[Int] = None) = 
     val xs = tokens.toSeq.collect {
-      case Token(_, _, _, Some(contract)) => contract.asJson
+      case Token(_, _, _, Some(contract), _) => contract.asJson
     }
 
     limit match

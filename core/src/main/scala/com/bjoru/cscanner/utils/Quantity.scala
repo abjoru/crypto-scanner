@@ -11,14 +11,15 @@ object Quantity:
 
   def decodeTokenQuantity(token: Token, value: String): Try[TokenBalance] = 
     decodeQuantity(value).map { n =>
-      val bal = BigDecimal(n) / token.decimals
+      val bal = BigDecimal(n) / math.pow(10, token.decimals)
       TokenBalance(token, bal)
     }
 
   def decodeQuantity(value: String): Try[BigInt] = value match
-    case v if isLongValue(v) => Try(BigInt(v.toLong))
+    //case v if isLongValue(v) => Try(BigInt(v.toLong))
     case v if isHexValue(v)  => Success(BigInt(value.substring(2), 16))
-    case other               => Failure(new IllegalArgumentException(s"Invalid quantity format: $other"))
+    //case other               => Failure(new IllegalArgumentException(s"Invalid quantity format: $other"))
+    case v                   => Try(BigInt(v))
 
   private def isLongValue(v: String): Boolean = 
     Try(v.toLong).isSuccess

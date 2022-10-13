@@ -1,4 +1,4 @@
-package com.bjoru.cscanner.eth
+package com.bjoru.cscanner.btc
 
 import cats.syntax.traverse.given
 import cats.effect.IO
@@ -7,17 +7,16 @@ import org.http4s.ember.client.*
 
 import com.bjoru.cscanner.{*, given}
 import com.bjoru.cscanner.types.*
-import com.bjoru.cscanner.config.*
 
 import java.nio.file.Path
 
-class EthereumApi(cfgDir: Path) extends ChainApi(Chain.Ethereum):
+class BitcoinApi(cfgDir: Path) extends ChainApi(Chain.Bitcoin):
 
   val clientR = EmberClientBuilder.default[IO].build
 
-  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]] = 
+  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]] =
     wallets.toList.traverse { wallet =>
-      clientR.use(EthplorerProvider.tokenBalances(wallet)(using _).map(wallet -> _))
+      clientR.use(BlockCypherProvider.tokenBalance(wallet)).map(wallet -> Seq(_))
     }
 
   def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = ???

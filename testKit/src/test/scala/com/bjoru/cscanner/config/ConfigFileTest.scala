@@ -9,8 +9,7 @@ class ConfigFileTest extends CatsEffectSuite:
   val cfgDir = getXdgDirectory(Xdg.Config) </> "crypto-scanner"
 
   test("Load token list") {
-    val io = loadTokens(cfgDir </> "tokens.yaml")
-    io.map { v =>
+    loadTokens(cfgDir </> "tokens.yaml").map { v =>
       println(v)
       assert(v.nonEmpty)
     }
