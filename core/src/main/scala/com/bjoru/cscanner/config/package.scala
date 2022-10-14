@@ -35,3 +35,9 @@ def loadTokens(path: Path): IO[Map[Chain, Seq[Token]]] =
 
 def loadEndpoints(path: Path): IO[Map[Provider, Seq[Endpoint]]] =
   loadYamlFile[Map[Provider, Seq[Endpoint]]](path)
+
+def findEndpoint(path: Path, provider: Provider, chain: Chain): IO[Endpoint] =
+  for all <- loadEndpoints(path)
+      res  = all.get(provider).flatMap(_.find(_.chain == chain))
+      rio <- res.fold(IO.raiseError(new Exception(s"No $provider for $chain")))(IO.pure(_))
+  yield rio

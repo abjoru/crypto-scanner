@@ -21,4 +21,4 @@ class DogecoinApi(cfgDir: Path) extends ChainApi(Chain.Dogecoin):
 
   def stakingBalances(wallets: Set[Wallet]): IO[Seq[StakingBalance]] = IO.pure(Seq.empty)
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]] = IO.pure(Seq.empty)
+  def farmBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]] = IO.pure(Seq.empty)

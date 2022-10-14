@@ -28,9 +28,21 @@ lazy val ethereumApi = (project in file("chains/ethereum"))
   .dependsOn(core)
   .settings(name := "crypto-scanner-ethereum")
 
+lazy val binanceApi = (project in file("chains/binance"))
+  .dependsOn(core)
+  .settings(name := "crypto-scanner-binance")
+
 lazy val avalancheApi = (project in file("chains/avalanche"))
   .dependsOn(core)
   .settings(name := "crypto-scanner-avalanche")
+
+lazy val polygonApi = (project in file("chains/polygon"))
+  .dependsOn(core)
+  .settings(name := "crypto-scanner-polygon")
+
+lazy val fantomApi = (project in file("chains/fantom"))
+  .dependsOn(core)
+  .settings(name := "crypto-scanner-fantom")
 
 lazy val solanaApi = (project in file("chains/solana"))
   .dependsOn(core)
@@ -43,6 +55,10 @@ lazy val elrondApi = (project in file("chains/elrond"))
 lazy val dogecoinApi = (project in file("chains/dogecoin"))
   .dependsOn(core)
   .settings(name := "crypto-scanner-dogecoin")
+
+lazy val harmonyApi = (project in file("chains/harmony"))
+  .dependsOn(core)
+  .settings(name := "crypto-scanner-harmony")
 
 //////////////
 // Standard //
@@ -79,7 +95,10 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi, avalancheApi)
+  .dependsOn(
+    bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi, avalancheApi,
+    binanceApi, polygonApi, fantomApi, harmonyApi
+  )
   .settings(
     name := "crypto-scanner",
     libraryDependencies ++= Seq(

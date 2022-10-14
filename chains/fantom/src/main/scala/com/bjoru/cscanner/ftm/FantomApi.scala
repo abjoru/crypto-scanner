@@ -1,4 +1,4 @@
-package com.bjoru.cscanner.btc
+package com.bjoru.cscanner.ftm
 
 import cats.syntax.traverse.given
 import cats.effect.IO
@@ -7,17 +7,19 @@ import org.http4s.ember.client.*
 
 import com.bjoru.cscanner.{*, given}
 import com.bjoru.cscanner.types.*
+import com.bjoru.cscanner.api.CovalentApi
 
 import java.nio.file.Path
 
-class BitcoinApi(cfgDir: Path) extends ChainApi(Chain.Bitcoin):
+class FantomApi(cfgDir: Path) extends ChainApi(Chain.Fantom):
 
   import Balance.*
 
   val clientR = EmberClientBuilder.default[IO].build
 
   def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
-    wallets.toList.traverse(w => clientR.use(BlockCypherProvider.tokenBalance(w)))
+    val xs = wallets.toList.traverse(w => clientR.use(CovalentApi(cfgDir, chain).tokenBalance(w)))
+    xs.map(_.flatten.groupBy(_.token.symbol).map(_._2.reduce(_ + _)).toSeq)
 
   def stakingBalances(wallets: Set[Wallet]): IO[Seq[StakingBalance]] = IO.pure(Seq.empty)
 

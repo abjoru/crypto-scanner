@@ -13,7 +13,7 @@ import scala.util.{Try, Success, Failure}
 enum Provider:
   case QuickNode
   case WatchData
-  case Elrond
+  case CovalentHQ
 
 object Provider:
 

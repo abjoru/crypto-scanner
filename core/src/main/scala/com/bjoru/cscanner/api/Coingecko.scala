@@ -1,4 +1,4 @@
-package com.bjoru.cscanner
+package com.bjoru.cscanner.api
 
 import cats.syntax.traverse.given
 import cats.effect.IO

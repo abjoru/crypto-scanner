@@ -6,6 +6,7 @@ import cats.effect.IO
 import pureconfig.ConfigReader
 import pureconfig.error.ExceptionThrown
 
+import com.bjoru.cscanner.api.Coingecko
 import com.bjoru.cscanner.types.*
 
 import scala.util.{Try, Success, Failure}
@@ -63,14 +64,14 @@ trait ChainApi(val chain: Chain):
   def balances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
     for wb <- walletBalances(wallets)
         sb <- stakingBalances(wallets)
-        lp <- lpBalances(wallets)
+        lp <- farmBalances(wallets)
     yield Balance.flattenTokens(wb ++ sb.map(_.toTokenBalance) ++ lp.foldLeft(Seq.empty[TokenBalance])(_ ++ _.toTokenBalances))
 
   def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]]
 
   def stakingBalances(wallets: Set[Wallet]): IO[Seq[StakingBalance]]
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]]
+  def farmBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]]
 
   def priceUsd(cfgDir: Path, balances: Seq[TokenBalance]): IO[Seq[TokenBalance]] =
     val (missing, ok) = balances.partition(_.isMissingPrice)

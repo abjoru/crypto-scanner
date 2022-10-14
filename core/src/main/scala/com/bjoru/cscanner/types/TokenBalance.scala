@@ -5,6 +5,7 @@ import cats.syntax.show.given
 
 import io.circe.*
 
+import scala.util.Try
 import scala.math.BigDecimal.RoundingMode
 
 enum Balance:
@@ -49,9 +50,8 @@ object Balance:
 
     def valueUsd: BigDecimal = b match
       case Balance.TokenBalance(t, b) => t.priceUsd match
-        case Some(p) if p != Double.NaN =>
-          t.priceUsd.map(p => b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
-        case _ => BigDecimal(0.0)
+        case Some(p) => Try(b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
+        case _       => BigDecimal(0.0)
       case Balance.StakingBalance(t, b) => 
         t.priceUsd.map(p => b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
       case Balance.FarmBalance(_, lp, rw) =>
