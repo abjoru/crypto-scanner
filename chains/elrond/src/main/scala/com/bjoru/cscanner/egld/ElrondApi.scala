@@ -15,11 +15,10 @@ class ElrondApi(cfgDir: Path) extends ChainApi(Chain.Elrond):
 
   val clientR = EmberClientBuilder.default[IO].build
 
-  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]] =
-    wallets.toList.traverse { wallet =>
-      for api <- ElrondProvider.loadProvider(cfgDir)
-          tok <- clientR.use(api.getTokens(wallet)(using _))
-      yield wallet -> tok
-    }
+  def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
+    val xs = wallets.toList.traverse(w => clientR.use(ElrondProvider.getTokens(w)))
+    xs.map(v => TokenBalance.flatten(v.flatten))
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = ???
+  def stakingBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] = IO.pure(Seq.empty)
+
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = IO.pure(Seq.empty)

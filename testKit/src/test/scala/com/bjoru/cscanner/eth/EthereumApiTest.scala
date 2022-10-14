@@ -18,6 +18,6 @@ class EthereumApiTest extends CatsEffectSuite:
   test("Query eth wallet balances") {
     for ws <- wallets
         rs <- EthereumApi(cfgDir).balances(ws.toSet)
-        _  <- IO(rs.flatMap(_._2).foreach(println))
+        _  <- IO(rs.foreach(println))
     yield assert(rs.nonEmpty)
   }

@@ -18,6 +18,6 @@ class DogecoinApiTest extends CatsEffectSuite:
   test("Query dogecoin wallet balance") {
     for ws <- wallets
         rs <- DogecoinApi(cfgDir).balances(ws.toSet)
-        _  <- IO(rs.flatMap(_._2).foreach(println))
+        _  <- IO(rs.foreach(println))
     yield assert(rs.nonEmpty)
   }

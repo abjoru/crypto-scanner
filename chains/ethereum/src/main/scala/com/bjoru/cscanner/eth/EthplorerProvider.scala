@@ -37,7 +37,7 @@ object EthplorerProvider:
 
   private val Uri = uri"https://api.ethplorer.io/getAddressInfo"
 
-  def tokenBalances(wallet: Wallet)(using client: Client[IO]): IO[Seq[TokenBalance]] =
+  def tokenBalances(wallet: Wallet)(client: Client[IO]): IO[Seq[TokenBalance]] =
     client.expect[Json](Uri / wallet.address.stringValue +? ("apiKey" -> "freekey")).flatMap { json => 
       for wei  <- IO.fromEither(json.hcursor.downField("ETH").downField("rawBalance").as[String])
           tail <- IO.fromEither(json.hcursor.downField("tokens").as[Seq[TokenBalance]])

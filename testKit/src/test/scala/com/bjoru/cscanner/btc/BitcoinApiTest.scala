@@ -18,6 +18,6 @@ class BitcoinApiTest extends CatsEffectSuite:
   test("Query bitcoin wallet balance") {
     for ws <- wallets
         rs <- BitcoinApi(cfgDir).balances(ws.toSet)
-        _  <- IO(rs.flatMap(_._2).foreach(println))
+        _  <- IO(rs.foreach(println))
     yield assert(rs.nonEmpty)
   }

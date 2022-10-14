@@ -3,12 +3,15 @@ package com.bjoru.cscanner.config
 import cats.syntax.traverse.given
 import cats.effect.IO
 import pureconfig.*
+import io.circe.Decoder
+import io.circe.parser.*
 
 import com.bjoru.cscanner.{Chain, given}
 import com.bjoru.cscanner.types.{Wallet, Token, Provider, Endpoint}
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters.given
+import scala.io.Source
 
 import java.util.{Map as JMap, List as JList}
 import java.nio.file.Path
@@ -17,6 +20,12 @@ def loadYamlFile[T: ClassTag](path: Path)(using ConfigReader[T]): IO[T] =
   for src <- IO.pure(YamlConfigSource.file(path))
       res <- IO.fromEither(src.load[T].left.map(error.ConfigReaderException(_)))
   yield res
+
+def loadJsonFile[T](path: Path)(using Decoder[T]): IO[T] =
+  for content <- IO(Source.fromFile(path.toFile).getLines.mkString("\n"))
+      json    <- IO.fromEither(parse(content))
+      result  <- IO.fromEither(json.as[T])
+  yield result
 
 def loadWallets(path: Path): IO[List[Wallet]] =
   loadYamlFile[List[Wallet]](path)

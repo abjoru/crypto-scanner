@@ -15,9 +15,10 @@ class EthereumApi(cfgDir: Path) extends ChainApi(Chain.Ethereum):
 
   val clientR = EmberClientBuilder.default[IO].build
 
-  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]] = 
-    wallets.toList.traverse { wallet =>
-      clientR.use(EthplorerProvider.tokenBalances(wallet)(using _).map(wallet -> _))
-    }
+  def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] = 
+    val xs = wallets.toList.traverse(w => clientR.use(EthplorerProvider.tokenBalances(w)))
+    xs.map(_.flatten.groupBy(_.token.symbol).map(_._2.reduce(_ + _)).toSeq)
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = ???
+  def stakingBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] = IO.pure(Seq.empty)
+
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = IO.pure(Seq.empty)

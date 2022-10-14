@@ -10,6 +10,8 @@ import com.bjoru.cscanner.types.*
 
 import scala.util.{Try, Success, Failure}
 
+import java.nio.file.Path
+
 enum Chain:
   case Bitcoin
   case Ethereum
@@ -45,9 +47,36 @@ object Chain:
       case Chain.Harmony => Symbol("one")
       case Chain.Dogecoin => Symbol("doge")
 
+  def fromString(str: String): Option[Chain] =
+    Try(Chain.valueOf(str.capitalize)).toOption
 
 trait ChainApi(val chain: Chain):
+  import Balance.*
 
-  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]]
+  def totals(cfgDir: Path, wallets: Set[Wallet]): IO[(Double, Seq[TokenBalance])] = 
+    for a <- balances(wallets)
+        b <- priceUsd(cfgDir, a)
+        r  = b.foldLeft(0.0)(_ + _.valueUsd.toDouble)
+    yield r -> b
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]]
+  def balances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
+    for wb <- walletBalances(wallets)
+        sb <- stakingBalances(wallets)
+        lp <- lpBalances(wallets)
+    yield wb ++ sb ++ lp.foldLeft(Seq.empty[TokenBalance])(_ ++ _.toTokenBalances)
+
+  def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]]
+
+  def stakingBalances(wallets: Set[Wallet]): IO[Seq[StakingBalance]]
+
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]]
+
+  def priceUsd(cfgDir: Path, balances: Seq[TokenBalance]): IO[Seq[TokenBalance]] =
+    val (missing, ok) = balances.partition(_.isMissingPrice)
+
+    if missing.isEmpty then IO.pure(ok) else 
+      Coingecko(cfgDir).priceFor(missing.map(_.token.symbol).toSet).map { pm =>
+        missing.map(tb => pm.get(tb.token.symbol)
+               .map(tb.withPrice))
+               .flatten ++ ok
+      }

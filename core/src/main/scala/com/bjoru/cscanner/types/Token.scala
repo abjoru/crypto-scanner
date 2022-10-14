@@ -17,6 +17,9 @@ object Symbol:
 
   given ConfigReader[Symbol] = ConfigReader.fromString(s => Right(apply(s)))
 
+  extension (s: Symbol)
+    def nonEmpty: Boolean = s.toString.size > 0
+
   def apply(str: String): Symbol = str.toUpperCase
 
 final case class Token(
@@ -29,6 +32,11 @@ final case class Token(
 
 object Token:
 
-  val Eth = Token(Symbol("ETH"), "Ethereum", 0, None)
-  val Btc = Token(Symbol("BTC"), "Bitcoin", 8, None)
+  val Btc  = Token(Symbol("BTC"), "Bitcoin", 8, None)
+  val Eth  = Token(Symbol("ETH"), "Ethereum", 0, None)
+  val Sol  = Token(Symbol("SOL"), "Solana", 8, None)
   val Doge = Token(Symbol("DOGE"), "Dogecoin", 8, None)
+
+  extension (t: Token)
+    def withPrice(price: Double): Token =
+      t.copy(priceUsd = Some(price))

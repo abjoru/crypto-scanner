@@ -17,6 +17,6 @@ class ElrondApiTest extends CatsEffectSuite:
   test("Query elrond token balances") {
     for ws <- loadWallets(cfgDir </> WALLETS_FILE).map(_.filter(_.chain == Chain.Elrond))
         rs <- ElrondApi(cfgDir).balances(ws.toSet)
-        _  <- IO(rs.flatMap(_._2).foreach(println))
+        _  <- IO(rs.foreach(println))
     yield assert(rs.nonEmpty)
   }

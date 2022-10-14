@@ -1,6 +1,6 @@
 package com.bjoru.cscanner.utils
 
-import com.bjoru.cscanner.types.{Token, TokenBalance}
+import com.bjoru.cscanner.types.{Token, TokenBalance, Wallet}
 
 import scala.util.{Try, Success, Failure}
 
@@ -16,9 +16,7 @@ object Quantity:
     }
 
   def decodeQuantity(value: String): Try[BigInt] = value match
-    //case v if isLongValue(v) => Try(BigInt(v.toLong))
     case v if isHexValue(v)  => Success(BigInt(value.substring(2), 16))
-    //case other               => Failure(new IllegalArgumentException(s"Invalid quantity format: $other"))
     case v                   => Try(BigInt(v))
 
   private def isLongValue(v: String): Boolean = 

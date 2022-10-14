@@ -10,6 +10,8 @@ import org.http4s.dsl.io.*
 import org.http4s.client.*
 import org.http4s.client.dsl.io.*
 import org.http4s.circe.*
+import org.http4s.circe.CirceEntityDecoder.given
+import org.http4s.implicits.uri
 
 import com.bjoru.cscanner.{*, given}
 import com.bjoru.cscanner.types.*
@@ -18,7 +20,9 @@ import com.bjoru.cscanner.config.*
 
 import java.nio.file.Path
 
-class ElrondProvider(endpoint: Endpoint):
+object ElrondProvider:
+
+  import Quantity.decodeTokenQuantity as decodeTQ
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("name").as[String]
@@ -26,19 +30,11 @@ class ElrondProvider(endpoint: Endpoint):
         dec  <- c.downField("decimals").as[Int]
         bal  <- c.downField("balance").as[String]
         usd  <- c.downField("valueUsd").as[Double]
-        res  <- Quantity.decodeTokenQuantity(Token(symb, name, dec, None, Some(usd)), bal).circeResult(c)
+        res  <- decodeTQ(Token(symb, name, dec, None, Some(usd)), bal).circeResult(c)
     yield res
   }
 
-  def getTokens(wallet: Wallet)(using client: Client[IO]): IO[Seq[TokenBalance]] =
-    val req = GET(endpoint.uri / "accounts" / wallet.address.stringValue / "tokens")
-    client.expect(req)(jsonOf[IO, Seq[TokenBalance]])
+  private val Uri = uri"https://api.elrond.com"
 
-object ElrondProvider:
-
-  def loadProvider(cfgDir: Path): IO[ElrondProvider] =
-    loadEndpoints(cfgDir </> ENDPOINTS_FILE).flatMap { e =>
-      Endpoint.select(Provider.Elrond, Chain.Elrond)(e) match
-        case Some(ep) => IO.pure(ElrondProvider(ep))
-        case None     => IO.raiseError(new Exception("No Elrond provider configured!"))
-    }
+  def getTokens(wallet: Wallet)(client: Client[IO]): IO[Seq[TokenBalance]] =
+    client.expect[Seq[TokenBalance]](Uri / "account" / wallet.address.stringValue / "tokens")

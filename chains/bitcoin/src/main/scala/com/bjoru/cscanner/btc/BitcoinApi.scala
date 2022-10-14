@@ -14,9 +14,9 @@ class BitcoinApi(cfgDir: Path) extends ChainApi(Chain.Bitcoin):
 
   val clientR = EmberClientBuilder.default[IO].build
 
-  def balances(wallets: Set[Wallet]): IO[Seq[(Wallet, Seq[TokenBalance])]] =
-    wallets.toList.traverse { wallet =>
-      clientR.use(BlockCypherProvider.tokenBalance(wallet)).map(wallet -> Seq(_))
-    }
+  def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
+    wallets.toList.traverse(w => clientR.use(BlockCypherProvider.tokenBalance(w)))
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = ???
+  def stakingBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] = IO.pure(Seq.empty)
+
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = IO.pure(Seq.empty)
