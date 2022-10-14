@@ -33,6 +33,9 @@ object Balance:
     def withPrice(price: Double): Balance.StakingBalance = 
       sb.copy(token = sb.token.withPrice(price))
 
+    def toTokenBalance: Balance.TokenBalance = 
+      Balance.TokenBalance(sb.token, sb.balance)
+
   extension (fb: Balance.FarmBalance)
     def withPrice(f: Symbol => Double): Balance.FarmBalance =
       val newLp = fb.lp.map(v => v.withPrice(f(v.token.symbol)))
@@ -45,8 +48,10 @@ object Balance:
   extension (b: Balance)
 
     def valueUsd: BigDecimal = b match
-      case Balance.TokenBalance(t, b) => 
-        t.priceUsd.map(p => b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
+      case Balance.TokenBalance(t, b) => t.priceUsd match
+        case Some(p) if p != Double.NaN =>
+          t.priceUsd.map(p => b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
+        case _ => BigDecimal(0.0)
       case Balance.StakingBalance(t, b) => 
         t.priceUsd.map(p => b * BigDecimal(p)).getOrElse(BigDecimal(0.0))
       case Balance.FarmBalance(_, lp, rw) =>

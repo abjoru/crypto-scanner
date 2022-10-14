@@ -20,14 +20,16 @@ import java.nio.file.Path
 
 class QuickNodeProvider(endpoint: Endpoint):
 
+  import Balance.*
+
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("name").as[String]
         symb <- c.downField("symbol").as[Symbol]
         dec  <- c.downField("decimals").as[Int]
         addr <- c.downField("address").as[Address]
         bal  <- c.downField("amount").as[String]
-        res  <- Quantity.decodeTokenQuantity(Token(symb, name, dec, Some(addr)), bal).circeResult(c)
-    yield res
+        res  <- Quantity.decodeQuantity(Token(symb, name, dec, Some(addr)), bal).circeResult(c)
+    yield TokenBalance(Token(symb, name, dec, Some(addr)), res)
   }
 
   given Encoder[Request.EthBalance] = Encoder.encodeJson.contramap {

@@ -56,6 +56,7 @@ trait ChainApi(val chain: Chain):
   def totals(cfgDir: Path, wallets: Set[Wallet]): IO[(Double, Seq[TokenBalance])] = 
     for a <- balances(wallets)
         b <- priceUsd(cfgDir, a)
+        _ <- IO(b.foreach(println))
         r  = b.foldLeft(0.0)(_ + _.valueUsd.toDouble)
     yield r -> b
 
@@ -63,7 +64,7 @@ trait ChainApi(val chain: Chain):
     for wb <- walletBalances(wallets)
         sb <- stakingBalances(wallets)
         lp <- lpBalances(wallets)
-    yield wb ++ sb ++ lp.foldLeft(Seq.empty[TokenBalance])(_ ++ _.toTokenBalances)
+    yield Balance.flattenTokens(wb ++ sb.map(_.toTokenBalance) ++ lp.foldLeft(Seq.empty[TokenBalance])(_ ++ _.toTokenBalances))
 
   def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]]
 
@@ -75,8 +76,4 @@ trait ChainApi(val chain: Chain):
     val (missing, ok) = balances.partition(_.isMissingPrice)
 
     if missing.isEmpty then IO.pure(ok) else 
-      Coingecko(cfgDir).priceFor(missing.map(_.token.symbol).toSet).map { pm =>
-        missing.map(tb => pm.get(tb.token.symbol)
-               .map(tb.withPrice))
-               .flatten ++ ok
-      }
+      Coingecko(cfgDir).priceFor(missing).map(_ ++ ok)

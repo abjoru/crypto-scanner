@@ -22,7 +22,8 @@ import java.nio.file.Path
 
 object ElrondProvider:
 
-  import Quantity.decodeTokenQuantity as decodeTQ
+  import Balance.*
+  import Quantity.decodeQuantity
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("name").as[String]
@@ -30,11 +31,11 @@ object ElrondProvider:
         dec  <- c.downField("decimals").as[Int]
         bal  <- c.downField("balance").as[String]
         usd  <- c.downField("valueUsd").as[Double]
-        res  <- decodeTQ(Token(symb, name, dec, None, Some(usd)), bal).circeResult(c)
-    yield res
+        res  <- decodeQuantity(Token(symb, name, dec, None, Some(usd)), bal).circeResult(c)
+    yield TokenBalance(Token(symb, name, dec, None, Some(usd)), res)
   }
 
   private val Uri = uri"https://api.elrond.com"
 
   def getTokens(wallet: Wallet)(client: Client[IO]): IO[Seq[TokenBalance]] =
-    client.expect[Seq[TokenBalance]](Uri / "account" / wallet.address.stringValue / "tokens")
+    client.expect[Seq[TokenBalance]](Uri / "accounts" / wallet.address.stringValue / "tokens")

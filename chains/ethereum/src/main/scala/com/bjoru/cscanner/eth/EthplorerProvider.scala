@@ -22,7 +22,8 @@ import java.nio.file.Path
 
 object EthplorerProvider:
 
-  import Quantity.decodeTokenQuantity as decodeTQ
+  import Balance.*
+  import Quantity.decodeQuantity
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("tokenInfo").downField("name").as[String]
@@ -31,8 +32,8 @@ object EthplorerProvider:
         addr <- c.downField("tokenInfo").downField("address").as[Address]
         bala <- c.downField("rawBalance").as[String]
         rate  = c.downField("tokenInfo").downField("price").downField("rate").success.flatMap(checkPrice)
-        res  <- decodeTQ(Token(symb, name, dec, Some(addr), rate), bala).circeResult(c)
-    yield res
+        res  <- decodeQuantity(Token(symb, name, dec, Some(addr), rate), bala).circeResult(c)
+    yield TokenBalance(Token(symb, name, dec, Some(addr), rate), res)
   }
 
   private val Uri = uri"https://api.ethplorer.io/getAddressInfo"

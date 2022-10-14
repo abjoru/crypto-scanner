@@ -9,6 +9,8 @@ import com.bjoru.cscanner.config.loadWallets
 
 object Main extends IOApp:
 
+  import Balance.*
+
   val cfgDir = getXdgDirectory(Xdg.Config) </> "crypto-scanner"
 
   def run(args: List[String]): IO[ExitCode] = 
@@ -27,6 +29,7 @@ object Main extends IOApp:
     case Chain.Elrond   => egld.ElrondApi(cfgDir).totals(cfgDir, wallets)
     case Chain.Dogecoin => doge.DogecoinApi(cfgDir).totals(cfgDir, wallets)
     case Chain.Solana   => sol.SolanaApi(cfgDir).totals(cfgDir, wallets)
+    case Chain.Avalanche => avax.AvalancheApi(cfgDir).totals(cfgDir, wallets)
     case _              => IO.raiseError(new Exception("Unsupported at the moment!"))
 
   private def formatOutput(chain: Chain, data: (Double, Seq[TokenBalance])): IO[Unit] = IO {

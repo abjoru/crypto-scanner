@@ -13,12 +13,14 @@ import java.nio.file.Path
 
 class ElrondApi(cfgDir: Path) extends ChainApi(Chain.Elrond):
 
+  import Balance.*
+
   val clientR = EmberClientBuilder.default[IO].build
 
   def walletBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] =
     val xs = wallets.toList.traverse(w => clientR.use(ElrondProvider.getTokens(w)))
-    xs.map(v => TokenBalance.flatten(v.flatten))
+    xs.map(v => Balance.flattenTokens(v.flatten))
 
-  def stakingBalances(wallets: Set[Wallet]): IO[Seq[TokenBalance]] = IO.pure(Seq.empty)
+  def stakingBalances(wallets: Set[Wallet]): IO[Seq[StakingBalance]] = IO.pure(Seq.empty)
 
-  def lpBalances(wallets: Set[Wallet]): IO[Seq[LPTokenBalance]] = IO.pure(Seq.empty)
+  def lpBalances(wallets: Set[Wallet]): IO[Seq[FarmBalance]] = IO.pure(Seq.empty)

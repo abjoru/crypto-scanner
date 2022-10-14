@@ -22,7 +22,8 @@ import java.nio.file.Path
 
 object Solscan:
 
-  import Quantity.decodeTokenQuantity as decodeTQ
+  import Balance.*
+  import Quantity.decodeQuantity
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     for name <- c.downField("tokenName").as[String]
@@ -30,20 +31,24 @@ object Solscan:
         dec  <- c.downField("tokenAmount").downField("decimals").as[Int]
         addr <- c.downField("tokenAddress").as[Address]
         bala <- c.downField("tokenAmount").downField("amount").as[String]
-        res  <- decodeTQ(Token(symb.getOrElse(Symbol("")), name, dec, Some(addr)), bala).circeResult(c)
-    yield res
+        res  <- decodeQuantity(Token(symb.getOrElse(Symbol("")), name, dec, Some(addr)), bala).circeResult(c)
+    yield TokenBalance(Token(symb.getOrElse(Symbol("")), name, dec, Some(addr)), res)
   }
 
   private val Uri      = uri"https://public-api.solscan.io/account/tokens"
-  private val StakeUri = uri"https://public-api.solscan.io/account/stakeAccount"
+  private val StakeUri = uri"https://public-api.solscan.io/account/stakeAccounts"
 
   def tokenBalances(wallet: Wallet)(client: Client[IO]): IO[Seq[TokenBalance]] =
     client.expect[Seq[TokenBalance]](Uri +? ("account" -> wallet.address.stringValue))
           .map(_.filter(_._1.symbol.nonEmpty)) // drop scam coins
 
-  def stakingBalance(wallet: Wallet)(client: Client[IO]): IO[Option[TokenBalance]] =
+  def stakingBalance(wallet: Wallet)(client: Client[IO]): IO[Option[StakingBalance]] =
     client.expect(StakeUri +? ("account" -> wallet.address.stringValue))(jsonOf[IO, Json]).map { json =>
       json.hcursor.downField(wallet.address.stringValue).success.flatMap { c =>
-        c.downField("amount").as[String].flatMap(decodeTQ(Token.Sol, _).circeResult(c)).toOption
+        val res = c.downField("amount").as[String].flatMap { amount =>
+          decodeQuantity(Token.Sol, amount).circeResult(c)
+        }
+
+        res.toOption.map(StakingBalance(Token.Sol, _))
       }
     }

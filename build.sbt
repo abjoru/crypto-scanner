@@ -12,6 +12,7 @@ lazy val http4sVersion     = "0.23.16"
 lazy val circeVersion      = "0.14.1"
 lazy val pureConfigVersion = "0.17.1"
 lazy val snakeyamlVersion  = "1.32"
+lazy val stringdistVersion = "1.2.7"
 
 lazy val munitVersion = "0.7.29"
 
@@ -26,6 +27,10 @@ lazy val bitcoinApi = (project in file("chains/bitcoin"))
 lazy val ethereumApi = (project in file("chains/ethereum"))
   .dependsOn(core)
   .settings(name := "crypto-scanner-ethereum")
+
+lazy val avalancheApi = (project in file("chains/avalanche"))
+  .dependsOn(core)
+  .settings(name := "crypto-scanner-avalanche")
 
 lazy val solanaApi = (project in file("chains/solana"))
   .dependsOn(core)
@@ -57,7 +62,8 @@ lazy val core = (project in file("core"))
       "org.http4s"            %% "http4s-circe"        % http4sVersion,
       "org.http4s"            %% "http4s-dsl"          % http4sVersion,
       "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
-      "org.yaml"               % "snakeyaml"       % snakeyamlVersion
+      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
+      ("com.github.vickumar1981" %% "stringdistance" % stringdistVersion).cross(CrossVersion.for3Use2_13)
     )
   )
 
@@ -73,7 +79,7 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi)
+  .dependsOn(bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi, avalancheApi)
   .settings(
     name := "crypto-scanner",
     libraryDependencies ++= Seq(

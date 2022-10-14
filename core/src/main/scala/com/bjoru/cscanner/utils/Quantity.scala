@@ -1,6 +1,6 @@
 package com.bjoru.cscanner.utils
 
-import com.bjoru.cscanner.types.{Token, TokenBalance, Wallet}
+import com.bjoru.cscanner.types.Token
 
 import scala.util.{Try, Success, Failure}
 
@@ -9,11 +9,11 @@ object Quantity:
   val HexPrefix  = "0x"
   val HexCharMap = "0123456789abcdef".toCharArray
 
-  def decodeTokenQuantity(token: Token, value: String): Try[TokenBalance] = 
-    decodeQuantity(value).map { n =>
-      val bal = BigDecimal(n) / math.pow(10, token.decimals)
-      TokenBalance(token, bal)
-    }
+  def decodeQuantity(token: Token, value: String): Try[BigDecimal] =
+    decodeQuantity(value).map(n => BigDecimal(n) / math.pow(10, token.decimals))
+
+  def decodeQuantity(token: Token, value: BigDecimal): Try[BigDecimal] =
+    Success(value / math.pow(10, token.decimals))
 
   def decodeQuantity(value: String): Try[BigInt] = value match
     case v if isHexValue(v)  => Success(BigInt(value.substring(2), 16))

@@ -22,11 +22,14 @@ import java.nio.file.Path
 
 object BlockCypherProvider:
 
-  import Quantity.decodeTokenQuantity as decodeTQ
+  import Balance.TokenBalance
+  import Quantity.decodeQuantity
 
   given Decoder[TokenBalance] = Decoder.instance { c =>
     c.downField("balance").as[Long].flatMap { bal =>
-      decodeTQ(Token.Btc, bal.toString).circeResult(c)
+      decodeQuantity(Token.Btc, bal.toString)
+        .circeResult(c)
+        .map(TokenBalance(Token.Btc, _))
     }
   }
 
