@@ -20,6 +20,7 @@ enum Provider:
   case CovalentHQ
   case BlockCypher
   case QuickNode
+  case Elrond
 
 object Provider:
 

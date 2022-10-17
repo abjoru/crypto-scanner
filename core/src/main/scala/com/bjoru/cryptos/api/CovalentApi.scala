@@ -24,6 +24,8 @@ import java.nio.file.Path
 class CovalentApi(endpoint: Endpoint) extends CryptoApi:
 
   given Decoder[Token] = Decoder.instance { c =>
+    println(c.value.spaces2) // debug
+
     for name <- c.downField("contract_name").as[String]
         sym  <- c.downField("contract_ticker_symbol").as[Symbol]
         dec  <- c.downField("contract_decimals").as[Int]
@@ -34,7 +36,7 @@ class CovalentApi(endpoint: Endpoint) extends CryptoApi:
   }
 
   val supportedChains = Seq(
-    //Chain.Ethereum,
+    Chain.Ethereum,
     Chain.Binance,
     Chain.Avalanche,
     Chain.Fantom,
@@ -61,6 +63,7 @@ class CovalentApi(endpoint: Endpoint) extends CryptoApi:
   def tokenBalance(wallet: Wallet, client: Client[IO]): IO[Wallet] =
     for u <- balanceUri(wallet)
         j <- client.expect(u)(jsonOf[IO, Json])
+        //_ <- IO(println(j.spaces2)) // debug 
         r <- IO.fromEither(j.hcursor.downField("data").downField("items").as[Seq[Token]])
     yield wallet.withTokens(r)
 

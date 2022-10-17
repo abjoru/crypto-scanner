@@ -27,6 +27,7 @@ object CryptoApi:
       val apis = ex.collect {
         case (Provider.CovalentHQ, e)  => CovalentApi(e)
         case (Provider.BlockCypher, e) => BlockCypherApi(e)
+        case (Provider.Elrond, e)      => ElrondApi(e)
       }
 
       apis.toSeq

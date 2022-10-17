@@ -45,7 +45,12 @@ object Wallet:
       w.copy(chain = chain)
 
     def withTokens(tx: Seq[Token]): Wallet =
+      // blindly drop wallet token duplicates
       w.copy(tokens = (w.tokens ++ tx).distinctBy(Token.TokenId))
+
+    def withDApps(apps: Seq[DApp]): Wallet =
+      // blindly skip app if already present (by contract address)
+      w.copy(dapps = (w.dapps ++ apps).distinctBy(_.contract))
 
     def unpricedTokens: Seq[Token] = 
       val t1 = w.tokens.filter(_.priceUsd.isEmpty)

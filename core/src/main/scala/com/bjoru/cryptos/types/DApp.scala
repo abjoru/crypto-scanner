@@ -19,17 +19,13 @@ object DApp:
 
   given Show[DApp] = Show.show {
     case Staking(i, c, s, r) =>
-      val s1 = s"$i [$c]\nStaked:\n"
-      val s2 = s1 + s.map(_.show).mkString("  ", "\n", "")
-
-      s2 + "\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
+      val s1 = s"Staking: $i ${s.map(_.symbol).mkString("/")} = $$${s.foldLeft(0.0)(_ + _.valueUsd)}"
+      s"$s1\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
     case Farming(i, c, p, r) =>
-      val s1 = s"$i [$c]\nPairs:\n"
-      val s2 = s1 + p.map(_.show).mkString("  ", "\n", "")
-
-      s2 + "\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
+      val s1 = s"Farming: $i ${p.map(_.symbol).mkString("/")} = $$${p.foldLeft(0.0)(_ + _.valueUsd)}"
+      s"$s1\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
     case LQPool(i, c, t) =>
-      s"$i [$c]\nPairs:\n" + t.map(_.show).mkString("  ", "\n", "")
+      s"Pool: $i ${t.map(_.symbol).mkString("/")} = $$${t.foldLeft(0.0)(_ + _.valueUsd)}"
   }
 
   extension (dapp: DApp)
