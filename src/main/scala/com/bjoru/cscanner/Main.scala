@@ -1,28 +1,37 @@
 package com.bjoru.cscanner
 
+import cats.Foldable
 import cats.effect.*
-import cats.syntax.show.given
+import cats.implicits.given
 
-import com.bjoru.cscanner.{*, given}
-import com.bjoru.cscanner.types.*
-import com.bjoru.cscanner.config.loadWallets
+import org.http4s.client.*
+import org.http4s.ember.client.*
+
+import com.bjoru.cryptos.api.CryptoApi
+import com.bjoru.cryptos.types.*
 
 object Main extends IOApp:
 
-  import Balance.*
-
   val cfgDir = getXdgDirectory(Xdg.Config) </> "crypto-scanner"
 
-  def run(args: List[String]): IO[ExitCode] = 
-    args.headOption.flatMap(Chain.fromString) match 
-      case Some(chain) => 
-        for wx <- loadWallets(cfgDir </> WALLETS_FILE).map(_.filter(_.chain == chain))
-            rs <- scanChain(chain, wx.toSet)
-            _  <- formatOutput(chain, rs)
-        yield ExitCode.Success
-      case None =>
-        IO(println(s"Invalid chain: ${args.mkString}")).as(ExitCode.Error)
+  val clientR = EmberClientBuilder.default[IO].build
 
+  def run(args: List[String]): IO[ExitCode] = 
+    for wallets <- Wallet.loadWallets(cfgDir </> "wallets.yaml")
+        apis    <- CryptoApi.loadApis(cfgDir)
+        filled  <- clientR.use(syncWallets(wallets, apis))
+        _       <- IO(filled.foreach(w => println(w.show)))
+        _       <- IO(println("-------------------------------------"))
+        _       <- IO(println(s"Portfolio Totals: $$${filled.foldLeft(0.0)(_ + _.valueUsd)}"))
+    yield ExitCode.Success
+
+  def syncWallets(wallets: Seq[Wallet], apis: Seq[CryptoApi])(client: Client[IO]): IO[Seq[Wallet]] =
+    Foldable[Seq].foldM(apis, wallets) {
+      case (wx, api) => api.syncWallets(wx)(client)
+    }
+
+
+    /*
   def scanChain(chain: Chain, wallets: Set[Wallet]) = chain match
     case Chain.Bitcoin   => btc.BitcoinApi(cfgDir).totals(cfgDir, wallets)
     case Chain.Ethereum  => eth.EthereumApi(cfgDir).totals(cfgDir, wallets)
@@ -42,3 +51,4 @@ object Main extends IOApp:
     println("------------------------")
     println(s"Total: $$${data._1}")
   }
+  */

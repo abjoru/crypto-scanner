@@ -12,6 +12,7 @@ enum Balance:
   case TokenBalance(token: Token, balance: BigDecimal)
   case StakingBalance(token: Token, balance: BigDecimal)
   case FarmBalance(id: String, lp: Seq[TokenBalance], rewards: Seq[TokenBalance])
+  case LpBalance(poolToken: TokenBalance, pairs: Seq[TokenBalance])
 
 object Balance:
 
