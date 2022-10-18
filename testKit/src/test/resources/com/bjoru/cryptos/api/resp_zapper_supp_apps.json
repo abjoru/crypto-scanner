@@ -1,0 +1,3086 @@
+[
+  {
+    "network": "ethereum",
+    "apps": [
+      {
+        "appId": "alpha-tokenomics",
+        "meta": {
+          "label": "Alpha Tokenomics",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/alpha-tokenomics.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "amp",
+        "meta": {
+          "label": "Amp",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/amp.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "arth",
+        "meta": {
+          "label": "ARTH",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/arth.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position"
+          ]
+        }
+      },
+      {
+        "appId": "aura",
+        "meta": {
+          "label": "Aura Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aura.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "b-protocol",
+        "meta": {
+          "label": "B.Protocol",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/b-protocol.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "balancer-v2",
+        "meta": {
+          "label": "Balancer V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/balancer-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "bancor",
+        "meta": {
+          "label": "Bancor",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/bancor.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "clever",
+        "meta": {
+          "label": "CLever",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/clever.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "concentrator",
+        "meta": {
+          "label": "Concentrator",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/concentrator.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "convex-frax",
+        "meta": {
+          "label": "Convex Frax",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/convex-frax.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "defisaver",
+        "meta": {
+          "label": "DefiSaver",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/defisaver.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "dodo",
+        "meta": {
+          "label": "Dodo",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/dodo.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "ethereum-staking",
+        "meta": {
+          "label": "Ethereum Staking",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ethereum-staking.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "frax-lend",
+        "meta": {
+          "label": "Frax Lend",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/frax-lend.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "gamma-strategies",
+        "meta": {
+          "label": "Gamma Strategies",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/gamma-strategies.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "fund-manager"
+          ]
+        }
+      },
+      {
+        "appId": "granary-finance",
+        "meta": {
+          "label": "The Granary",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/granary-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "gro",
+        "meta": {
+          "label": "gro",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/gro.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "illuvium",
+        "meta": {
+          "label": "Illuvium",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/illuvium.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "gaming"
+          ]
+        }
+      },
+      {
+        "appId": "liquity",
+        "meta": {
+          "label": "Liquity",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/liquity.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position"
+          ]
+        }
+      },
+      {
+        "appId": "llama-airforce",
+        "meta": {
+          "label": "Llama Airforce",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/llama-airforce.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "loopring",
+        "meta": {
+          "label": "Loopring",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/loopring.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "maker",
+        "meta": {
+          "label": "Maker",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/maker.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position"
+          ]
+        }
+      },
+      {
+        "appId": "mirror",
+        "meta": {
+          "label": "Mirror",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/mirror.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "mstable",
+        "meta": {
+          "label": "mStable",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/mstable.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "notional-finance",
+        "meta": {
+          "label": "Notional Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/notional-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "ondo",
+        "meta": {
+          "label": "Ondo Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ondo.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "1inch",
+        "meta": {
+          "label": "1inch",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/1inch.png",
+          "supportedActions": [
+            "view",
+            "transact",
+            "stake"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "pie-dao",
+        "meta": {
+          "label": "PieDAO",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pie-dao.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "polygon-staking",
+        "meta": {
+          "label": "Polygon Staking",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/polygon-staking.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "staking"
+          ]
+        }
+      },
+      {
+        "appId": "reflexer",
+        "meta": {
+          "label": "Reflexer",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/reflexer.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "revert-finance",
+        "meta": {
+          "label": "Revert finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/revert-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "ribbon-lend",
+        "meta": {
+          "label": "Ribbon Lend",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ribbon-lend.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "ribbon-v2",
+        "meta": {
+          "label": "Ribbon V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ribbon-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "rook",
+        "meta": {
+          "label": "Rook",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/rook.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator",
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "sablier",
+        "meta": {
+          "label": "Sablier",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sablier.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "payments"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "strongblock",
+        "meta": {
+          "label": "Strongblock",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/strongblock.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "sudoswap",
+        "meta": {
+          "label": "Sudoswap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sudoswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      },
+      {
+        "appId": "sushiswap",
+        "meta": {
+          "label": "SushiSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-bentobox",
+        "meta": {
+          "label": "SushiSwap BentoBox",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-bentobox.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "uniswap-v2",
+        "meta": {
+          "label": "Uniswap V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/uniswap-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "votium",
+        "meta": {
+          "label": "Votium",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/votium.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "x2y2",
+        "meta": {
+          "label": "X2Y2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/x2y2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "nft-marketplace"
+          ]
+        }
+      },
+      {
+        "appId": "yam",
+        "meta": {
+          "label": "Yam",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/yam.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "zero-x",
+        "meta": {
+          "label": "0x",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/zero-x.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "polygon",
+    "apps": [
+      {
+        "appId": "adamant",
+        "meta": {
+          "label": "Adamant Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/adamant.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "atlendis-v1",
+        "meta": {
+          "label": "Atlendis",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/atlendis-v1.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bonds",
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "kyberswap-elastic",
+        "meta": {
+          "label": "KyberSwap Elastic",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/kyberswap-elastic.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "pool-together-v3",
+        "meta": {
+          "label": "PoolTogetherV3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pool-together-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lottery"
+          ]
+        }
+      },
+      {
+        "appId": "revert-finance",
+        "meta": {
+          "label": "Revert finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/revert-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "superfluid",
+        "meta": {
+          "label": "Superfluid",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/superfluid.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "payments"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-bentobox",
+        "meta": {
+          "label": "SushiSwap BentoBox",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-bentobox.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-kashi",
+        "meta": {
+          "label": "SushiSwap Kashi",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-kashi.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "klima",
+        "meta": {
+          "label": "Klima",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/klima.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "apeswap",
+        "meta": {
+          "label": "ApeSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/apeswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "symphony",
+        "meta": {
+          "label": "Symphony Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/symphony.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange",
+            "limit-order"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "quickswap",
+        "meta": {
+          "label": "Quickswap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/quickswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "optimism",
+    "apps": [
+      {
+        "appId": "aave-v3",
+        "meta": {
+          "label": "Aave V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aave-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "aelin",
+        "meta": {
+          "label": "Aelin",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aelin.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "launchpad"
+          ]
+        }
+      },
+      {
+        "appId": "alchemix-v2",
+        "meta": {
+          "label": "Alchemix V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/alchemix-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "arrakis",
+        "meta": {
+          "label": "Arrakis Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/arrakis.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "beethoven-x",
+        "meta": {
+          "label": "Beethoven-X",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beethoven-x.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "granary-finance",
+        "meta": {
+          "label": "The Granary",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/granary-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "hop",
+        "meta": {
+          "label": "Hop",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hop.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      },
+      {
+        "appId": "kyberswap-elastic",
+        "meta": {
+          "label": "KyberSwap Elastic",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/kyberswap-elastic.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "lyra",
+        "meta": {
+          "label": "Lyra",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/lyra.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "options"
+          ]
+        }
+      },
+      {
+        "appId": "lyra-avalon",
+        "meta": {
+          "label": "Lyra Avalon",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/lyra-avalon.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "options"
+          ]
+        }
+      },
+      {
+        "appId": "mean-finance",
+        "meta": {
+          "label": "Mean Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/mean-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management",
+            "cross-chain",
+            "prediction-market"
+          ]
+        }
+      },
+      {
+        "appId": "polynomial",
+        "meta": {
+          "label": "Polynomial Protocol",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/polynomial.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management",
+            "options"
+          ]
+        }
+      },
+      {
+        "appId": "pool-together-v4",
+        "meta": {
+          "label": "PoolTogetherV4",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pool-together-v4.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lottery"
+          ]
+        }
+      },
+      {
+        "appId": "reaper",
+        "meta": {
+          "label": "Reaper",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/reaper.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "revert-finance",
+        "meta": {
+          "label": "Revert finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/revert-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "rubicon",
+        "meta": {
+          "label": "Rubicon",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/rubicon.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "cross-chain",
+            "decentralized-exchange",
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "stargate",
+        "meta": {
+          "label": "Stargate",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/stargate.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "symphony",
+        "meta": {
+          "label": "Symphony Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/symphony.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange",
+            "limit-order"
+          ]
+        }
+      },
+      {
+        "appId": "synapse",
+        "meta": {
+          "label": "Synapse",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synapse.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "stablecoin",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "synthetix",
+        "meta": {
+          "label": "Synthetix",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synthetix.png",
+          "supportedActions": [
+            "view",
+            "stake"
+          ],
+          "tags": [
+            "synthetics"
+          ]
+        }
+      },
+      {
+        "appId": "thales",
+        "meta": {
+          "label": "Thales",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/thales.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "options"
+          ]
+        }
+      },
+      {
+        "appId": "uniswap-v3",
+        "meta": {
+          "label": "Uniswap V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/uniswap-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "velodrome",
+        "meta": {
+          "label": "Velodrome",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/velodrome.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange",
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "zip-swap",
+        "meta": {
+          "label": "ZipSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/zip-swap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "gnosis",
+    "apps": [
+      {
+        "appId": "agave",
+        "meta": {
+          "label": "Agave",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/agave.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "honeyswap",
+        "meta": {
+          "label": "Honeyswap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/honeyswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "liquid-staking"
+          ]
+        }
+      },
+      {
+        "appId": "hop",
+        "meta": {
+          "label": "Hop",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hop.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      },
+      {
+        "appId": "pickle",
+        "meta": {
+          "label": "Pickle",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pickle.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "pool-together-v3",
+        "meta": {
+          "label": "PoolTogetherV3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pool-together-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lottery"
+          ]
+        }
+      },
+      {
+        "appId": "qi-dao",
+        "meta": {
+          "label": "Qi Dao",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/qi-dao.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position",
+            "farming",
+            "stablecoin"
+          ]
+        }
+      },
+      {
+        "appId": "realt",
+        "meta": {
+          "label": "RealT",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/realt.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "real-estate"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap",
+        "meta": {
+          "label": "SushiSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "binance-smart-chain",
+    "apps": [
+      {
+        "appId": "abracadabra",
+        "meta": {
+          "label": "Abracadabra",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/abracadabra.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "autofarm",
+        "meta": {
+          "label": "AutoFarm",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/autofarm.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "banano",
+        "meta": {
+          "label": "Banano",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/banano.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "belt",
+        "meta": {
+          "label": "Belt",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/belt.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "biswap",
+        "meta": {
+          "label": "Biswap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/biswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "bzx",
+        "meta": {
+          "label": "bZx",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/bzx.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "cream",
+        "meta": {
+          "label": "Cream",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/cream.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "dodo",
+        "meta": {
+          "label": "Dodo",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/dodo.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "eleven-finance",
+        "meta": {
+          "label": "Eleven Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/eleven-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "ellipsis",
+        "meta": {
+          "label": "Ellipsis",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ellipsis.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "harvest",
+        "meta": {
+          "label": "Harvest",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/harvest.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "hector-network",
+        "meta": {
+          "label": "Hector Network",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hector-network.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "helio",
+        "meta": {
+          "label": "Helio",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/helio.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position"
+          ]
+        }
+      },
+      {
+        "appId": "kyberswap-elastic",
+        "meta": {
+          "label": "KyberSwap Elastic",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/kyberswap-elastic.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "1inch",
+        "meta": {
+          "label": "1inch",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/1inch.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "ooki",
+        "meta": {
+          "label": "ooki",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ooki.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position",
+            "decentralized-exchange",
+            "lending",
+            "margin-trading",
+            "staking"
+          ]
+        }
+      },
+      {
+        "appId": "openleverage",
+        "meta": {
+          "label": "OpenLeverage",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/openleverage.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "p-stake",
+        "meta": {
+          "label": "pSTAKE",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/p-stake.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquid-staking"
+          ]
+        }
+      },
+      {
+        "appId": "pancakeswap",
+        "meta": {
+          "label": "PancakeSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pancakeswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "lottery"
+          ]
+        }
+      },
+      {
+        "appId": "popsicle",
+        "meta": {
+          "label": "Popsicle",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/popsicle.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "stargate",
+        "meta": {
+          "label": "Stargate",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/stargate.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap",
+        "meta": {
+          "label": "SushiSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-bentobox",
+        "meta": {
+          "label": "SushiSwap BentoBox",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-bentobox.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-kashi",
+        "meta": {
+          "label": "SushiSwap Kashi",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-kashi.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "synapse",
+        "meta": {
+          "label": "Synapse",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synapse.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "stablecoin",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "venus",
+        "meta": {
+          "label": "Venus",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/venus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "waultswap",
+        "meta": {
+          "label": "WaultSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/waultswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "wombat-exchange",
+        "meta": {
+          "label": "Wombat Exchange",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/wombat-exchange.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "fantom",
+    "apps": [
+      {
+        "appId": "aave-v3",
+        "meta": {
+          "label": "Aave V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aave-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "abracadabra",
+        "meta": {
+          "label": "Abracadabra",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/abracadabra.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "ape-tax",
+        "meta": {
+          "label": "Ape Tax",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/ape-tax.png",
+          "supportedActions": [
+            "view",
+            "transact"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "banano",
+        "meta": {
+          "label": "Banano",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/banano.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "beethoven-x",
+        "meta": {
+          "label": "Beethoven-X",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beethoven-x.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "eighty-eight-mph-v3",
+        "meta": {
+          "label": "88mph V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/eighty-eight-mph-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "eleven-finance",
+        "meta": {
+          "label": "Eleven Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/eleven-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "geist",
+        "meta": {
+          "label": "Geist",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/geist.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "grim",
+        "meta": {
+          "label": "Grim Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/grim.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "hector-network",
+        "meta": {
+          "label": "Hector Network",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hector-network.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "homora-v2",
+        "meta": {
+          "label": "Homora V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/homora-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "hundred-finance",
+        "meta": {
+          "label": "Hundred Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hundred-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "iron-bank",
+        "meta": {
+          "label": "Iron Bank",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/iron-bank.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "kyberswap-elastic",
+        "meta": {
+          "label": "KyberSwap Elastic",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/kyberswap-elastic.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "liquiddriver",
+        "meta": {
+          "label": "LiquidDriver",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/liquiddriver.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "market-xyz",
+        "meta": {
+          "label": "Market",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/market-xyz.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "morpheus-swap",
+        "meta": {
+          "label": "MorpheusSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/morpheus-swap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "olympus",
+        "meta": {
+          "label": "Olympus",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/olympus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "pickle",
+        "meta": {
+          "label": "Pickle",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pickle.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "popsicle",
+        "meta": {
+          "label": "Popsicle",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/popsicle.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "qi-dao",
+        "meta": {
+          "label": "Qi Dao",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/qi-dao.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "collateralized-debt-position",
+            "farming",
+            "stablecoin"
+          ]
+        }
+      },
+      {
+        "appId": "reaper",
+        "meta": {
+          "label": "Reaper",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/reaper.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "robo-vault",
+        "meta": {
+          "label": "Robo Vault",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/robo-vault.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "scarecrow",
+        "meta": {
+          "label": "ScareCrow",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/scarecrow.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "scream",
+        "meta": {
+          "label": "Scream",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/scream.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "scream-v2",
+        "meta": {
+          "label": "Scream V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/scream-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "solidex",
+        "meta": {
+          "label": "Solidex",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/solidex.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "solidly",
+        "meta": {
+          "label": "Solidly",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/solidly.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "spartacus",
+        "meta": {
+          "label": "Spartacus",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/spartacus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "spiritswap",
+        "meta": {
+          "label": "SpiritSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/spiritswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "spookyswap",
+        "meta": {
+          "label": "SpookySwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/spookyswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "stargate",
+        "meta": {
+          "label": "Stargate",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/stargate.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "sturdy",
+        "meta": {
+          "label": "Sturdy",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sturdy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap",
+        "meta": {
+          "label": "SushiSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "synapse",
+        "meta": {
+          "label": "Synapse",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synapse.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "stablecoin",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "tarot",
+        "meta": {
+          "label": "Tarot",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tarot.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "tempus",
+        "meta": {
+          "label": "Tempus Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tempus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "cross-chain",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "tomb",
+        "meta": {
+          "label": "Tomb Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tomb.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "wonderland",
+        "meta": {
+          "label": "Wonderland",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/wonderland.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "yearn",
+        "meta": {
+          "label": "Yearn",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/yearn.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "avalanche",
+    "apps": [
+      {
+        "appId": "aave-v3",
+        "meta": {
+          "label": "Aave V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aave-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "gmx",
+        "meta": {
+          "label": "GMX",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/gmx.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "margin-trading"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "vector-finance",
+        "meta": {
+          "label": "Vector Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/vector-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "wonderland",
+        "meta": {
+          "label": "Wonderland",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/wonderland.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "trader-joe",
+        "meta": {
+          "label": "Trader Joe",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/trader-joe.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "homora-v2",
+        "meta": {
+          "label": "Homora V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/homora-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "pangolin",
+        "meta": {
+          "label": "Pangolin",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pangolin.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "symphony",
+        "meta": {
+          "label": "Symphony Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/symphony.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "decentralized-exchange",
+            "limit-order"
+          ]
+        }
+      },
+      {
+        "appId": "synapse",
+        "meta": {
+          "label": "Synapse",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synapse.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "stablecoin",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "gro",
+        "meta": {
+          "label": "gro",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/gro.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "stargate",
+        "meta": {
+          "label": "Stargate",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/stargate.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "arbitrum",
+    "apps": [
+      {
+        "appId": "aave-v3",
+        "meta": {
+          "label": "Aave V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aave-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "abracadabra",
+        "meta": {
+          "label": "Abracadabra",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/abracadabra.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "adamant",
+        "meta": {
+          "label": "Adamant Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/adamant.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "balancer-v2",
+        "meta": {
+          "label": "Balancer V2",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/balancer-v2.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "beefy",
+        "meta": {
+          "label": "Beefy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/beefy.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "cozy-finance",
+        "meta": {
+          "label": "Cozy Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/cozy-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "insurance"
+          ]
+        }
+      },
+      {
+        "appId": "curve",
+        "meta": {
+          "label": "Curve",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/curve.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "dodo",
+        "meta": {
+          "label": "Dodo",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/dodo.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "decentralized-exchange"
+          ]
+        }
+      },
+      {
+        "appId": "gmx",
+        "meta": {
+          "label": "GMX",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/gmx.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "margin-trading"
+          ]
+        }
+      },
+      {
+        "appId": "hop",
+        "meta": {
+          "label": "Hop",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/hop.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      },
+      {
+        "appId": "impermax",
+        "meta": {
+          "label": "Impermax",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/impermax.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "jones-dao",
+        "meta": {
+          "label": "Jones Dao",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/jones-dao.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "derivatives",
+            "options"
+          ]
+        }
+      },
+      {
+        "appId": "kyberswap-elastic",
+        "meta": {
+          "label": "KyberSwap Elastic",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/kyberswap-elastic.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "olympus",
+        "meta": {
+          "label": "Olympus",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/olympus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "plutus",
+        "meta": {
+          "label": "PlutusDAO",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/plutus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management",
+            "farming"
+          ]
+        }
+      },
+      {
+        "appId": "premia",
+        "meta": {
+          "label": "Premia",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/premia.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "derivatives"
+          ]
+        }
+      },
+      {
+        "appId": "revert-finance",
+        "meta": {
+          "label": "Revert finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/revert-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "stargate",
+        "meta": {
+          "label": "Stargate",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/stargate.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "infrastructure"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap",
+        "meta": {
+          "label": "SushiSwap",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-bentobox",
+        "meta": {
+          "label": "SushiSwap BentoBox",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-bentobox.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "sushiswap-kashi",
+        "meta": {
+          "label": "SushiSwap Kashi",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/sushiswap-kashi.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "swapr",
+        "meta": {
+          "label": "Swapr",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/swapr.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "synapse",
+        "meta": {
+          "label": "Synapse",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/synapse.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool",
+            "stablecoin",
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "tenderize",
+        "meta": {
+          "label": "Tenderize",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tenderize.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquid-staking",
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "umami-finance",
+        "meta": {
+          "label": "Umami Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/umami-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "fund-manager",
+            "asset-management"
+          ]
+        }
+      },
+      {
+        "appId": "uniswap-v3",
+        "meta": {
+          "label": "Uniswap V3",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/uniswap-v3.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "vesta-finance",
+        "meta": {
+          "label": "Vesta Finance",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/vesta-finance.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "zerotwohm",
+        "meta": {
+          "label": "ZeroTwOhm",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/zerotwohm.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "elastic-finance"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "aurora",
+    "apps": [
+      {
+        "appId": "aurigami",
+        "meta": {
+          "label": "Aurigami",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aurigami.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending"
+          ]
+        }
+      },
+      {
+        "appId": "aurora-plus",
+        "meta": {
+          "label": "Aurora+",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/aurora-plus.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "staking"
+          ]
+        }
+      },
+      {
+        "appId": "bastion-protocol",
+        "meta": {
+          "label": "Bastion",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/bastion-protocol.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "lending",
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "pickle",
+        "meta": {
+          "label": "Pickle",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/pickle.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "yield-aggregator"
+          ]
+        }
+      },
+      {
+        "appId": "socket",
+        "meta": {
+          "label": "Socket",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/socket.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "bridge"
+          ]
+        }
+      },
+      {
+        "appId": "solace",
+        "meta": {
+          "label": "Solace",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/solace.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "insurance"
+          ]
+        }
+      },
+      {
+        "appId": "trisolaris",
+        "meta": {
+          "label": "Trisolaris",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/trisolaris.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": [
+            "liquidity-pool"
+          ]
+        }
+      },
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "celo",
+    "apps": [
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "moonriver",
+    "apps": [
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [],
+          "tags": []
+        }
+      }
+    ]
+  },
+  {
+    "network": "bitcoin",
+    "apps": [
+      {
+        "appId": "tokens",
+        "meta": {
+          "label": "Tokens",
+          "img": "https://storage.googleapis.com/zapper-fi-assets/apps/tokens.png",
+          "supportedActions": [
+            "view"
+          ],
+          "tags": []
+        }
+      }
+    ]
+  }
+]
