@@ -2,9 +2,12 @@ package com.bjoru.cryptos.types
 
 import cats.Show
 
+import io.circe.Decoder
 import pureconfig.ConfigReader
 
 import com.bjoru.cryptos.instances.*
+
+import scala.util.Try
 
 opaque type Usd = BigDecimal
 
@@ -15,6 +18,8 @@ object Usd:
   given Show[Option[Usd]] = Show.show(v => currencyFormatter.format(v.getOrElse(Zero)))
 
   given ConfigReader[Usd] = ConfigReader.fromString(v => Right(apply(v)))
+
+  given Decoder[Usd] = Decoder.decodeBigDecimal.emapTry(d => Try(d))
 
   extension (usd: Usd)
     def +(other: Usd): Usd = usd + other

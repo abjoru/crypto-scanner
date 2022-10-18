@@ -30,14 +30,15 @@ object Chain:
   }
 
   extension (c: Chain)
-    def isMultichain: Boolean = Seq(
-      Chain.Ethereum,
-      Chain.Binance,
-      Chain.Avalanche,
-      Chain.Fantom,
-      Chain.Polygon,
-      Chain.Harmony
-    ).contains(c)
+    def isMultichain: Boolean = c == Chain.Ethereum
+      //Seq(
+      //Chain.Ethereum,
+      //Chain.Binance,
+      //Chain.Avalanche,
+      //Chain.Fantom,
+      //Chain.Polygon,
+      //Chain.Harmony
+      //).contains(c)
 
   def fromString(str: String): Option[Chain] =
     Try(Chain.valueOf(str.capitalize)).toOption

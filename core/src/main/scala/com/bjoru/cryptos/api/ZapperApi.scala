@@ -4,8 +4,11 @@ import cats.effect.IO
 
 import io.circe.Json
 
-import org.http4s.Uri
+import org.http4s.*
+import org.http4s.headers.*
+import org.http4s.dsl.io.*
 import org.http4s.client.*
+import org.http4s.client.dsl.io.*
 import org.http4s.circe.*
 
 import com.bjoru.cryptos.types.*
@@ -14,7 +17,7 @@ import scala.util.{Try, Success, Failure}
 
 import java.nio.file.Path
 
-class ZapperApi extends CryptoApi:
+class ZapperApi(endpoint: Endpoint) extends CryptoApi:
 
   val supportedChains = Seq(
     Chain.Ethereum,
@@ -30,15 +33,17 @@ class ZapperApi extends CryptoApi:
   def supportedBalances(wallets: Set[Wallet])(client: Client[IO]): IO[Json] =
     val addr = wallets.map(_.address.str).mkString(",")
 
-    for u <- IO.fromEither(Uri.fromString(s"https://api.zapper.fi/v2/apps/balances/supported?addresses[]=$addr"))
-        j <- client.expect(u)(jsonOf[IO, Json])
+    for u <- IO.fromEither(Uri.fromString(s"${endpoint.uri}/apps/balances/supported?addresses[]=$addr"))
+        r  = GET(u, Authorization(BasicCredentials(endpoint.apiKey, "")))
+        j <- client.expect(r)(jsonOf[IO, Json])
     yield j
 
   def appBalance(app: DAppId, wallets: Set[Wallet])(client: Client[IO]): IO[Json] =
     val addr = wallets.map(_.address.str).mkString(",")
     val id   = ZapperApi.DAppMapping(app)
 
-    for u <- IO.fromEither(Uri.fromString(s"https://api.zapper.fi/v2/apps/$id/balances?addresses[]=$addr"))
+    for u <- IO.fromEither(Uri.fromString(s"${endpoint.uri}/apps/$id/balances?addresses[]=$addr"))
+        r  = GET(u, Authorization(BasicCredentials(endpoint.apiKey, "")))
         j <- client.expect(u)(jsonOf[IO, Json])
     yield j
 

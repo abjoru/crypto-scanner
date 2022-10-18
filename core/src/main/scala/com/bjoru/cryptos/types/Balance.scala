@@ -2,9 +2,12 @@ package com.bjoru.cryptos.types
 
 import cats.Show
 
+import io.circe.Decoder
 import pureconfig.ConfigReader
 
 import com.bjoru.cryptos.instances.*
+
+import scala.util.Try
 
 opaque type Balance = BigDecimal
 
@@ -15,6 +18,8 @@ object Balance:
   given Show[Option[Balance]] = Show.show(v => numberFormatter.format(v.getOrElse(Zero)))
 
   given ConfigReader[Balance] = ConfigReader.fromString(v => Right(apply(v)))
+
+  given Decoder[Balance] = Decoder.decodeBigDecimal.emapTry(d => Try(d))
 
   extension (b: Balance)
     def +(other: Balance): Balance = b + other

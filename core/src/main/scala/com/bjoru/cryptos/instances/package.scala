@@ -3,6 +3,8 @@ package com.bjoru.cryptos.instances
 import cats.Show
 import cats.syntax.traverse.given
 
+import io.circe.Decoder
+
 import pureconfig.*
 import pureconfig.syntax.{*, given}
 import com.typesafe.config.ConfigValueFactory
@@ -13,12 +15,19 @@ import java.text.NumberFormat
 
 val numberFormatter = NumberFormat.getInstance
 val currencyFormatter = NumberFormat.getCurrencyInstance
+val percentFormatter = NumberFormat.getPercentInstance
 
 //////////
 // Show //
 //////////
 
 //given Show[BigDecimal] = ???
+
+//////////////
+// Decoders //
+//////////////
+
+given Decoder[Uri] = Decoder.decodeString.emapTry(s => Uri.fromString(s).toTry)
 
 ////////////////////
 // Config Readers //
