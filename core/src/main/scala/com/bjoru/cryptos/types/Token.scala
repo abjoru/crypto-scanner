@@ -1,11 +1,13 @@
 package com.bjoru.cryptos.types
 
 import cats.Show
+import cats.syntax.show.given
 
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
 
 import com.bjoru.cryptos.utils.*
+import com.bjoru.cryptos.instances.*
 
 import scala.util.Try
 
@@ -14,8 +16,8 @@ final case class Token(
   symbol:   Symbol,
   decimals: Int,
   contract: Option[Address],
-  priceUsd: Option[Double],
-  balance:  Option[BigDecimal]
+  priceUsd: Option[Usd],
+  balance:  Option[Balance]
 ) derives ConfigReader
 
 object Token:
@@ -27,33 +29,33 @@ object Token:
   val Doge = Token("Dogecoin", Symbol.Doge, 8)
 
   given Show[Token] = Show.show { t =>
-    s"${t.name} ${t.balance.getOrElse(BigDecimal(0.0))} ${t.symbol} = $$${t.priceUsd.getOrElse(0.0)}"
+    s"${t.name} ${t.balance.show} ${t.symbol} = $$${t.valueUsd.show}"
   }
 
   extension (t: Token)
 
     // FIXME must be tokens of same kind!
     def +(other: Token): Token = 
-      t.copy(balance = t.balance.map(_ + other.balance.getOrElse(BigDecimal(0.0))))
+      t.copy(balance = t.balance.map(_ + other.balance.getOrElse(Balance.Zero)))
 
     def withContract(contract: Address): Token =
       t.copy(contract = Some(contract))
 
-    def withPrice(price: Double): Token =
+    def withPrice(price: Usd): Token =
       t.copy(priceUsd = Some(price))
 
-    def withBalance(balance: BigDecimal): Token =
+    def withBalance(balance: Balance): Token =
       t.copy(balance = Some(balance))
 
     def withRawBalance(balance: String): Try[Token] =
-      decodeQuantity(balance).map(n => t.withBalance(BigDecimal(n) / math.pow(10, t.decimals)))
+      decodeQuantity(balance).map(n => t.withBalance(Balance(n).pow10(t.decimals)))
 
     def withRawBalance(balance: BigInt): Token =
-      t.withBalance(BigDecimal(balance) / math.pow(10, t.decimals))
+      t.withBalance(Balance(balance).pow10(t.decimals))
 
-    def valueUsd: Double = (t.balance, t.priceUsd) match
-      case (Some(b), Some(p)) => (b * BigDecimal(p)).toDouble
-      case _                  => 0.0
+    def valueUsd: Usd = (t.balance, t.priceUsd) match
+      case (Some(b), Some(p)) => p * b.toBD
+      case _                  => Usd.Zero
 
   def apply(name: String, symbol: Symbol, decimals: Int): Token =
     new Token(name, symbol, decimals, None, None, None)
@@ -88,7 +90,7 @@ object Token:
 
     r1.toSeq ++ r2.toSeq
 
-  def valueUsd(tokens: Seq[Token]): Double = 
-    consolidate(tokens).foldLeft(0.0) {
+  def valueUsd(tokens: Seq[Token]): Usd = 
+    consolidate(tokens).foldLeft(Usd.Zero) {
       case (acc, t) => acc + t.valueUsd
     }

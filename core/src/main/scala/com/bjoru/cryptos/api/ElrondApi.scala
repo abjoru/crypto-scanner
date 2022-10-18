@@ -21,9 +21,9 @@ class ElrondApi(endpoint: Endpoint) extends CryptoApi:
     for name <- c.downField("name").as[String]
         symb <- c.downField("ticker").as[Symbol]
         dec  <- c.downField("decimals").as[Int]
-        usd  <- c.downField("valueUsd").as[Double]
+        usd  <- c.downField("valueUsd").as[BigDecimal]
         bal  <- c.downField("balance").as[String]
-        tok   = Token(name, symb, dec, None, Some(usd), None)
+        tok   = Token(name, symb, dec, None, Some(Usd(usd)), None)
         res  <- tok.withRawBalance(bal).circeResult(c)
     yield res
   }

@@ -28,7 +28,7 @@ object Gecko:
 
   given Decoder[Gecko] = Decoder.forProduct3("id", "name", "symbol")(Gecko.apply)
 
-class GeckoPricer(prices: Seq[(Token, Double)]):
+class GeckoPricer(prices: Seq[(Token, Usd)]):
 
   def price(t: Token): Token = prices.find(_._1 == t) match
     case Some((_, price)) => t.withPrice(price)
@@ -59,14 +59,14 @@ class GeckoPriceApi(cfgDir: Path):
   private def mkTable(json: Json, matches: Seq[(Token, Gecko)]) = 
     val cursor    = json.hcursor
     val priceData = cursor.keys.getOrElse(Iterable.empty).map { id =>
-      cursor.downField(id).downField("usd").as[Double].map(id -> _).toOption
+      cursor.downField(id).downField("usd").as[BigDecimal].map(id -> Usd(_)).toOption
     }.flatten.toMap
 
     matches.map { (t, g) =>
       priceData.get(g.id).map(t -> _)
     }.flatten
 
-  def priceTable(tokens: Seq[Token])(client: Client[IO]): IO[Seq[(Token, Double)]] =
+  def priceTable(tokens: Seq[Token])(client: Client[IO]): IO[Seq[(Token, Usd)]] =
     for idx <- geckoIndex
         mth  = matchTokens(tokens, idx)
         arg  = mth.map(_._2.id).mkString(",")

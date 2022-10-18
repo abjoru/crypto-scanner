@@ -23,12 +23,16 @@ trait CryptoApi:
 object CryptoApi:
 
   def loadApis(cfgDir: Path): IO[Seq[CryptoApi]] = 
-    Endpoint.loadAll(cfgDir </> "endpoints.yaml").map { ex =>
-      val apis = ex.collect {
-        case (Provider.CovalentHQ, e)  => CovalentApi(e)
-        case (Provider.BlockCypher, e) => BlockCypherApi(e)
-        case (Provider.Elrond, e)      => ElrondApi(e)
-      }
+    for ep <- Endpoint.loadAll(cfgDir </> "endpoints.yaml")
+        tf <- TokenFilter.loadFilters(cfgDir </> "token-filter.yaml")
+        rs  = resolveApis(ep, tf)
+    yield rs
 
-      apis.toSeq
+  def resolveApis(endpoints: Map[Provider, Endpoint], filters: Seq[TokenFilter]) =
+    val apis = endpoints.collect {
+      case (Provider.CovalentHQ, e)  => CovalentApi(e, filters)
+      case (Provider.BlockCypher, e) => BlockCypherApi(e)
+      case (Provider.Elrond, e)      => ElrondApi(e)
     }
+
+    apis.toSeq

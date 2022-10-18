@@ -24,3 +24,4 @@ def loadJsonFile[T](path: Path)(using Decoder[T]): IO[T] =
       json <- IO.fromEither(parse(cont))
       res  <- IO.fromEither(json.as[T])
   yield res
+

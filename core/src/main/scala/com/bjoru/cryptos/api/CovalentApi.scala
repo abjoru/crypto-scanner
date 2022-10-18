@@ -21,18 +21,16 @@ import com.bjoru.cryptos.config.*
 
 import java.nio.file.Path
 
-class CovalentApi(endpoint: Endpoint) extends CryptoApi:
+class CovalentApi(endpoint: Endpoint, filters: Seq[TokenFilter]) extends CryptoApi:
 
   given Decoder[Token] = Decoder.instance { c =>
-    println(c.value.spaces2) // debug
-
     for name <- c.downField("contract_name").as[String]
         sym  <- c.downField("contract_ticker_symbol").as[Symbol]
         dec  <- c.downField("contract_decimals").as[Int]
         addr <- c.downField("contract_address").as[Address]
         bal  <- c.downField("balance").as[BigInt]
-        rate <- c.downField("quote_rate").as[Double]
-    yield Token(name, sym, dec, Some(addr), Some(rate), None).withRawBalance(bal)
+        rate <- c.downField("quote_rate").as[BigDecimal]
+    yield Token(name, sym, dec, Some(addr), Some(Usd(rate)), None).withRawBalance(bal)
   }
 
   val supportedChains = Seq(
@@ -63,19 +61,24 @@ class CovalentApi(endpoint: Endpoint) extends CryptoApi:
   def tokenBalance(wallet: Wallet, client: Client[IO]): IO[Wallet] =
     for u <- balanceUri(wallet)
         j <- client.expect(u)(jsonOf[IO, Json])
-        //_ <- IO(println(j.spaces2)) // debug 
-        r <- IO.fromEither(j.hcursor.downField("data").downField("items").as[Seq[Token]])
+        f  = filters.find(_.chain == wallet.chain)
+        t  = j.hcursor.downField("data").downField("items").values.map(processResult).getOrElse(Iterable.empty)
+        r  = f.map(_.filterTokens(t.toSeq)).getOrElse(t.toSeq)
     yield wallet.withTokens(r)
 
-  def multichainBalance(wallet: Wallet, client: Client[IO]): IO[Wallet] =
+  def multichainBalance(wallet: Wallet, client: Client[IO]): IO[Seq[Wallet]] =
     val chains = supportedChains.filterNot(_ == Chain.Solana)
     val result =  chains.traverse(c => tokenBalance(wallet.withChain(c), client))
-    result.map(_.reduce((a, b) => a.withTokens(b.tokens)))
+    result //.map(_.reduce((a, b) => a.withTokens(b.tokens)))
 
   def doSyncWallets(wallets: Seq[Wallet], client: Client[IO]): IO[Seq[Wallet]] =
     val (mw, sw) = wallets.partition(_.isMultichain)
 
     for 
       mc <- mw.traverse(multichainBalance(_, client))
-      sc <- wallets.traverse(tokenBalance(_, client))
-    yield mc ++ sc
+      sc <- sw.traverse(tokenBalance(_, client))
+    yield mc.flatten ++ sc
+
+  private def processResult(items: Iterable[Json]) = 
+    items.map(_.as[Token].toOption).flatten
+

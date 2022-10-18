@@ -1,5 +1,6 @@
 package com.bjoru.cryptos.instances
 
+import cats.Show
 import cats.syntax.traverse.given
 
 import pureconfig.*
@@ -7,6 +8,21 @@ import pureconfig.syntax.{*, given}
 import com.typesafe.config.ConfigValueFactory
 
 import org.http4s.Uri
+
+import java.text.NumberFormat
+
+val numberFormatter = NumberFormat.getInstance
+val currencyFormatter = NumberFormat.getCurrencyInstance
+
+//////////
+// Show //
+//////////
+
+//given Show[BigDecimal] = ???
+
+////////////////////
+// Config Readers //
+////////////////////
 
 given ConfigReader[Uri] = ConfigReader.fromString { str =>
   Uri.fromString(str).left.map(e => error.CannotConvert(str, "Uri", e.getMessage))

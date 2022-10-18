@@ -60,9 +60,12 @@ object Wallet:
 
       (t1 ++ t2).distinctBy(Token.TokenId)
 
-    def valueUsd: Double = 
-      val tPrice = w.tokens.foldLeft(0.0)(_ + _.priceUsd.getOrElse(0.0))
-      val dPrice = w.dapps.foldLeft(0.0)(_ + _.valueUsd)
+    def tokensNoEmpty: Seq[Token] =
+      w.tokens.filterNot(_.balance.map(_.isZero).getOrElse(false))
+
+    def valueUsd: Usd = 
+      val tPrice = w.tokens.foldLeft(Usd.Zero)(_ + _.priceUsd.getOrElse(Usd.Zero))
+      val dPrice = w.dapps.foldLeft(Usd.Zero)(_ + _.valueUsd)
       tPrice + dPrice
 
     def isMultichain: Boolean = w.chain == Chain.Ethereum

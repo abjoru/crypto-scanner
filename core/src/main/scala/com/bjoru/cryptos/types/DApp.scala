@@ -19,13 +19,13 @@ object DApp:
 
   given Show[DApp] = Show.show {
     case Staking(i, c, s, r) =>
-      val s1 = s"Staking: $i ${s.map(_.symbol).mkString("/")} = $$${s.foldLeft(0.0)(_ + _.valueUsd)}"
+      val s1 = s"Staking: $i ${s.map(_.symbol).mkString("/")} = $$${s.foldLeft(Usd.Zero)(_ + _.valueUsd)}"
       s"$s1\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
     case Farming(i, c, p, r) =>
-      val s1 = s"Farming: $i ${p.map(_.symbol).mkString("/")} = $$${p.foldLeft(0.0)(_ + _.valueUsd)}"
+      val s1 = s"Farming: $i ${p.map(_.symbol).mkString("/")} = $$${p.foldLeft(Usd.Zero)(_ + _.valueUsd)}"
       s"$s1\nRewards:\n" + r.map(_.show).mkString("  ", "\n", "")
     case LQPool(i, c, t) =>
-      s"Pool: $i ${t.map(_.symbol).mkString("/")} = $$${t.foldLeft(0.0)(_ + _.valueUsd)}"
+      s"Pool: $i ${t.map(_.symbol).mkString("/")} = $$${t.foldLeft(Usd.Zero)(_ + _.valueUsd)}"
   }
 
   extension (dapp: DApp)
@@ -48,7 +48,7 @@ object DApp:
       case LQPool(_, _, t) => 
         t.distinctBy(Token.TokenId).filter(_.priceUsd.isEmpty)
 
-    def valueUsd: Double = dapp match 
+    def valueUsd: Usd = dapp match 
       case Staking(_, _, s, r) => Token.valueUsd(s ++ r)
       case Farming(_, _, p, r) => Token.valueUsd(p ++ r)
       case LQPool(_, _, t)     => Token.valueUsd(t)
