@@ -60,14 +60,6 @@ lazy val harmonyApi = (project in file("chains/harmony"))
   .dependsOn(core)
   .settings(name := "crypto-scanner-harmony")
 
-/////////
-// Api //
-/////////
-
-lazy val zapperApi = (project in file("api/zapper"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-zapper")
-
 //////////////
 // Standard //
 //////////////
@@ -92,7 +84,7 @@ lazy val core = (project in file("core"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(ethereumApi, elrondApi, bitcoinApi, dogecoinApi, solanaApi, zapperApi)
+  .dependsOn(ethereumApi, elrondApi, bitcoinApi, dogecoinApi, solanaApi)
   .settings(
     name := "crypto-scanner-testkit",
     libraryDependencies ++= Seq(

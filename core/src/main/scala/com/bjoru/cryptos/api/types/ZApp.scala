@@ -1,4 +1,4 @@
-package com.bjoru.cryptos.api.zapper.types
+package com.bjoru.cryptos.api.types
 
 import io.circe.{Decoder, Json}
 import io.circe.generic.semiauto.*
@@ -12,7 +12,7 @@ final case class ZApp(
   balance: ZBalance,
   totals: Seq[ZTotal],
   errors: Json,
-  app: ZInfo
+  app: Option[ZInfo]
 )
 
 object ZApp:

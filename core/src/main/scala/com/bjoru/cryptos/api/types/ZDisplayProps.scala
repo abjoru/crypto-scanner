@@ -1,4 +1,4 @@
-package com.bjoru.cryptos.api.zapper.types
+package com.bjoru.cryptos.api.types
 
 import cats.implicits.{*, given}
 

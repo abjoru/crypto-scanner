@@ -1,4 +1,4 @@
-package com.bjoru.cryptos.api.zapper.types
+package com.bjoru.cryptos.api.types
 
 import io.circe.{Decoder, Json}
 
@@ -8,7 +8,7 @@ final case class ZBalance(
   deposits:  Json,
   debt:      Json,
   vesting:   Json,
-  wallet:    Json,
+  wallet:    Map[String, ZDescriptor],
   claimable: Map[String, ZDescriptor],
   locked:    Json,
   nft:       Json,
@@ -22,7 +22,7 @@ object ZBalance:
     for dep  <- c.downField("deposits").as[Json]
         debt <- c.downField("debt").as[Json]
         vest <- c.downField("vesting").as[Json]
-        wall <- c.downField("wallet").as[Json]
+        wall <- c.downField("wallet").as[Map[String, ZDescriptor]]
         clm  <- c.downField("claimable").as[Map[String, ZDescriptor]]
         lckd <- c.downField("locked").as[Json]
         nft  <- c.downField("nft").as[Json]
