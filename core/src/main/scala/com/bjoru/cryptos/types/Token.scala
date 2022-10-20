@@ -8,6 +8,7 @@ import pureconfig.generic.derivation.default.*
 
 import com.bjoru.cryptos.utils.*
 import com.bjoru.cryptos.instances.*
+import com.bjoru.cryptos.syntax.*
 
 import scala.util.Try
 
@@ -27,6 +28,12 @@ object Token:
   val Eth  = Token("Ethereum", Symbol.Eth, 0)
   val Sol  = Token("Solana", Symbol.Sol, 8)
   val Doge = Token("Dogecoin", Symbol.Doge, 8)
+
+  // FIXME token needs redesign, needs chain info!
+  given Identity[Token] with
+    extension (t: Token) def id = t match
+      case Token(_, s, _, Some(c), _, _) => Id.create(s.show, c.show)
+      case nonContract                   => Id.create(nonContract.symbol.show)
 
   given Show[Token] = Show.show { t =>
     s"${t.name} ${t.balance.show} ${t.symbol} = $$${t.valueUsd.show}"

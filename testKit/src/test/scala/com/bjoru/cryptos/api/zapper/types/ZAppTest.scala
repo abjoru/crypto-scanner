@@ -30,7 +30,7 @@ class ZAppTest extends CatsEffectSuite:
     val lns = src.getLines.filter(ZapperApi.LineFilter).toList.map(_.dropWhile(_ != '{'))
 
     for r <- IO.fromEither(lns.traverse(parse(_).flatMap(_.as[ZApp])))
-        //_ <- IO(println(r.drop(102).head))
-        _ <- IO(r.map(_.balance.wallet).foreach(println))
+        _ <- IO(println(r.drop(102).head))
+        //_ <- IO(println(r.app.data.map(_.key).foreach(println)))
     yield assert(true)
   }

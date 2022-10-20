@@ -3,6 +3,8 @@ package com.bjoru.cryptos.types
 import cats.{Monad, Show}
 import cats.implicits.given
 
+import com.bjoru.cryptos.syntax.*
+
 enum DAppId:
   case Gro
   case Curve
@@ -16,6 +18,12 @@ enum DApp:
   case LQPool(id: DAppId,  contract: Address, tokens: Seq[Token])
 
 object DApp:
+
+  given Identity[DApp] with
+    extension (d: DApp) def id = d match
+      case s: Staking => Id.create(s.id.toString, s.contract.str)
+      case f: Farming => Id.create(f.id.toString, f.contract.str)
+      case l: LQPool  => Id.create(l.id.toString, l.contract.str)
 
   given Show[DApp] = Show.show {
     case Staking(i, c, s, r) =>
