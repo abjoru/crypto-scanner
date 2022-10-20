@@ -1,13 +1,18 @@
 package com.bjoru.cryptosis.types
 
+import cats.Show
+import cats.syntax.show.given
+
 import io.circe.*
 import io.circe.syntax.*
 
 import com.bjoru.cryptosis.*
 
+import scala.util.{Try, Success, Failure}
+
 enum Token:
   case BaseToken(
-    id:       String,
+    geckoId:  String,
     name:     String,
     symbol:   Symbol,
     chain:    Chain,
@@ -15,7 +20,7 @@ enum Token:
   )
 
   case BalancedToken(
-    id:       String,
+    geckoId:  String,
     name:     String,
     symbol:   Symbol,
     chain:    Chain,
@@ -25,7 +30,7 @@ enum Token:
   )
 
   case PricedAndBalancedToken(
-    id:       String,
+    geckoId:  String,
     name:     String,
     symbol:   Symbol,
     chain:    Chain,
@@ -38,10 +43,15 @@ enum Token:
 object Token:
 
   given Identity[Token] with
-    extension (t: Token) def id = t match
-      case v: BaseToken              => Id.createRaw(v.id)
-      case v: BalancedToken          => Id.createRaw(v.id)
-      case v: PricedAndBalancedToken => Id.createRaw(v.id)
+    extension (t: Token) def id = (t.symbol, t.chain, t.contract) match
+      case (s, c, Some(a)) => Id.create(s.lower, c.str, a.str)
+      case (s, c, None)    => Id.create(s.lower, c.str)
+
+  given Show[Token] = Show.show {
+    case v: BaseToken              => v.symbol.show
+    case v: BalancedToken          => s"${v.balance.show} ${v.symbol.show}"
+    case v: PricedAndBalancedToken => s"${v.balance.show} ${v.symbol.show} @ ${v.price.show}"
+  }
 
   given Encoder[Token] = Encoder.instance { token =>
     Json.obj(
@@ -65,6 +75,11 @@ object Token:
   }
 
   extension (t: Token)
+
+    def geckoId: String = t match
+      case v: BaseToken              => v.geckoId
+      case v: BalancedToken          => v.geckoId
+      case v: PricedAndBalancedToken => v.geckoId
 
     def name: String = t match
       case v: BaseToken              => v.name
@@ -90,6 +105,16 @@ object Token:
       case v: BaseToken              => v.contract
       case v: BalancedToken          => v.contract
       case v: PricedAndBalancedToken => v.contract
+
+    def missingPrice: Boolean = t match
+      case v: PricedAndBalancedToken => true
+      case _                         => false
+
+    def valueUsd: Try[Price] = t match
+      case v: PricedAndBalancedToken => 
+        Success(v.price * v.balance.toBigDecimal)
+      case _ =>
+        Failure(new Exception(s"No price defined for ${t.show}"))
 
     def withBalance(decimals: Int, balance: Balance): Token = t match
       case BaseToken(i, n, s, c, a) =>

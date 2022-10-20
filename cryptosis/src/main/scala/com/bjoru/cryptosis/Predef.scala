@@ -40,6 +40,7 @@ extension (v: File)
 
 extension (v: Path)
   def </>(o: String): FilePath = v.resolve(o)
+  def exists: Boolean = v.toFile.exists()
 
 extension [T](t: Try[T])
   def toCirceResult(c: HCursor): Result[T] =

@@ -12,78 +12,45 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.config.GToken
 import com.bjoru.cryptosis.types.*
 
-class Env(val registry: Map[Id, Token], val priceRegistry: Map[Id, Price]):
+import scala.util.Try
 
-  def price(token: Token): IO[(Env, Price)] = ???
+class Env(val registry: TokenRegistry):
 
-  def prices(tokens: Seq[Token]): IO[(Env, Map[Id, Price])] = ???
+  def updateToken(token: Token): Env =
+    Env(registry.updateToken(token))
 
-  def setPrice(token: Token, price: Price): Env = 
-    if registry.contains(token.id)
-      then Env(registry, priceRegistry.updated(token.id, price))
-      else Env(registry.updated(token.id, token), priceRegistry.updated(token.id, price))
+  def updatePrice(geckoId: String, price: Price): Env =
+    Env(registry.updatePrice(geckoId, price))
 
-  def setPrices(prices: Seq[(Token, Price)]): Env =
-    prices.foldLeft(this) { case (acc, (t, p)) => acc.setPrice(t, p) }
+  def updatePrices(prices: Seq[(String, Price)]): Env =
+    Env(registry.updatePrices(prices))
 
-  // FIXME clean this up!
-  // reintroduce generic Id based on non-gecko fields and use
-  // string matching algo on name as last resort when multiple candidates
-  def findToken(symbol: Symbol, chain: Chain, contract: Option[Address]): Option[Token] =
-    registry.values.toList.filter(_.symbol == symbol) match
-      case Nil if contract.isDefined => 
-        println("not found by symbol!")
-        registry.values.find { t =>
-          val res = for a <- t.contract
-                        b <- contract
-                    yield a == b
+  def findTokenById(id: Id): Option[Token] =
+    registry.findById(id)
 
-          res.getOrElse(false)
-        }
+  def findTokenByContract(contract: Address): Option[Token] =
+    registry.findByContract(contract)
 
-      case Nil =>
-        println("still not found by symbol!")
-        None
+  def resolveToken(token: Token): Option[Token] =
+    registry.resolveToken(token)
 
-      case h :: Nil => Some(h)
+  def bluechipToken(chain: Chain): Try[Token] =
+    registry.bluechipFor(chain)
 
-      case group if chain == Chain.Unknown && contract.isDefined =>
-        println(s"searching in ${group.mkString(",")}")
-        group.find { t =>
-          val res = for a <- t.contract
-                        b <- contract
-                    yield a == b
-
-          res.getOrElse(false)
-        }
-
-      case group if chain == Chain.Unknown =>
-        group.filterNot(_.name.toLowerCase.contains("wrapped")).headOption
-
-      case group => group.find(_.chain == chain)
-
-  def saveRegistry(file: FilePath): IO[Unit] = 
-    for r <- IO(file.toFile.delete())
-        u <- saveJsonFile(file, registry.values.toSeq)
-    yield u
+  def saveEnv(cacheFile: FilePath): IO[Unit] =
+    registry.saveCache(cacheFile)
 
 object Env:
 
-  def loadRegistry(file: FilePath)(client: Client[IO]): IO[Env] = 
-    if file.toFile.exists
-      then loadJsonFile[Seq[Token]](file).map(buildRegistry)
-      else fetchRegistry(file, client)
+  def loadEnv(cacheFile: FilePath)(client: Client[IO]): IO[Env] = 
+    for glist <- fetchTokenList(client)
+        reg   <- TokenRegistry(cacheFile, glist)
+    yield Env(reg)
 
-  private def buildRegistry(tokens: Seq[Token]): Env = 
-    val reg = tokens.map(t => t.id -> t).toMap
-    Env(reg, Map.empty)
-
-  private def fetchRegistry(file: FilePath, client: Client[IO]): IO[Env] =
+  private def fetchTokenList(client: Client[IO]): IO[Seq[Token]] =
     for gt <- IO.fromEither(Uri.fromString("https://api.coingecko.com/api/v3/coins/list?include_platform=true"))
         dx <- client.expect[Seq[GToken]](gt)
-        tx  = processGeckos(dx)
-        _  <- saveJsonFile(file, tx)
-    yield Env(tx.map(t => t.id -> t).toMap, Map.empty)
+    yield processGeckos(dx)
 
   private def processGeckos(gtokens: Seq[GToken]): Seq[Token] = 
     val listOfLists = gtokens.map { 

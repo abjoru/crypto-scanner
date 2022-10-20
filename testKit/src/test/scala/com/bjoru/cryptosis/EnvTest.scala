@@ -16,10 +16,10 @@ class EnvTest extends CatsEffectSuite:
   val clientR = EmberClientBuilder.default[IO].build
 
   test("load empty registry") {
-    for e <- clientR.use(Env.loadRegistry(cfgDir </> "tokens.json"))
+    for e <- clientR.use(Env.loadEnv(cfgDir </> "tokens.json"))
         //_ <- IO(e.registry.foreach(kv => println(kv._2.name)))
         //_ <- IO(println(e.registry.size))
-        r  = e.findToken(Symbol("joe"), Chain.Unknown, None)
+        r  = e.bluechipToken(Chain.Fantom)
         _ <- IO(println(r))
     yield assert(true)
   }
