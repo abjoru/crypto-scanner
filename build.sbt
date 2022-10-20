@@ -72,6 +72,25 @@ lazy val zapperApi = (project in file("api/zapper"))
 // Standard //
 //////////////
 
+lazy val cryptosis = (project in file("cryptosis"))
+  .settings(
+    name := "cryptosis",
+    libraryDependencies ++= Seq(
+      "org.typelevel"         %% "cats-core"       % catsVersion,
+      "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
+      "io.circe"              %% "circe-core"      % circeVersion,
+      "io.circe"              %% "circe-parser"      % circeVersion,
+      "io.circe"              %% "circe-generic"   % circeVersion,
+      "org.http4s"            %% "http4s-core"     % http4sVersion,
+      "org.http4s"            %% "http4s-ember-client" % http4sVersion,
+      "org.http4s"            %% "http4s-circe"        % http4sVersion,
+      "org.http4s"            %% "http4s-dsl"          % http4sVersion,
+      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
+      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
+      ("com.github.vickumar1981" %% "stringdistance" % stringdistVersion).cross(CrossVersion.for3Use2_13)
+    )
+  )
+
 lazy val core = (project in file("core"))
   .settings(
     name := "crypto-scanner-core",
@@ -104,6 +123,7 @@ lazy val testKit = (project in file("testKit"))
 
 lazy val root = (project in file("."))
   .dependsOn(
+    cryptosis,
     bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi, avalancheApi,
     binanceApi, polygonApi, fantomApi, harmonyApi
   )

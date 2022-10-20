@@ -18,6 +18,6 @@ class ZAppTest extends CatsEffectSuite:
         r <- IO.fromEither(a.as[ZApp])
         //_ <- IO(r.balance.claimable.values.map(_.show).foreach(println))
         //_ <- IO(r.app.data.map(_.show).foreach(println))
-        _ <- IO(println(r))
+        _ <- IO(println(r.app.data.map(_.key).foreach(println)))
     yield assert(true)
   }
