@@ -1,5 +1,7 @@
 package com.bjoru.cryptosis
 
+import cats.effect.IO
+
 import io.circe.{HCursor, DecodingFailure as DF}
 import io.circe.Decoder.Result
 
@@ -32,6 +34,8 @@ def getXdgDirectory(xdg: Xdg): FilePath = xdg match
 
 def getHomeDirectory: FilePath = Paths.get(homeDir)
 
+def putStrLn(str: String): IO[Unit] = IO(println(str))
+
 extension (v: String)
   def </>(o: String): FilePath = Paths.get(v, o)
 
@@ -41,6 +45,10 @@ extension (v: File)
 extension (v: Path)
   def </>(o: String): FilePath = v.resolve(o)
   def exists: Boolean = v.toFile.exists()
+  def mkdirs: IO[Boolean] = v.exists match
+    case false if v.toFile.isDirectory  => IO(v.toFile.mkdirs())
+    case false                          => IO(v.toFile.getParentFile.mkdirs())
+    case true                           => IO.pure(false)
 
 extension [T](t: Try[T])
   def toCirceResult(c: HCursor): Result[T] =

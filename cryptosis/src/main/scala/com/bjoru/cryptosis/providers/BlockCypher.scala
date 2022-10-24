@@ -1,6 +1,7 @@
 package com.bjoru.cryptosis.providers
 
 import cats.effect.IO
+import cats.syntax.show.given
 import cats.syntax.foldable.given
 
 import io.circe.*
@@ -17,20 +18,17 @@ class BlockCypher(ep: Endpoint) extends ProviderApi:
 
   val supportedChains = Seq(Chain.Bitcoin, Chain.Dogecoin)
 
-  protected def doSync(wallets: Seq[Wallet], client: Client[IO], env: Env): IO[(Env, Seq[Wallet])] =
-    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((env, acc), w) => walletBalance(w, client, env).map(kv => kv._1 -> (acc :+ kv._2))
-    }
+  protected def doSync(wallets: Seq[Wallet], env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] =
+    foreachWallet(env, wallets)(walletBalance)
 
-  private def walletBalance(wallet: Wallet, client: Client[IO], env: Env): IO[(Env, Wallet)] =
+  private def walletBalance(env: Env, wallet: Wallet)(using client: Client[IO]): IO[(Env, Wallet)] =
     for a <- IO.pure(ep.uri / wallet.chain.symbol.lower / "main" / "addrs" / wallet.address.str)
         b <- client.expect(a)(jsonOf[IO, Json])
         c <- IO.fromEither(b.hcursor.downField("balance").as[BigInt])
         d <- processToken(env, wallet.chain, c)
-    yield d._1 -> wallet.addBalance(d._2)
+    yield env -> wallet.addBalance(d)
 
-  private def processToken(env: Env, chain: Chain, balance: BigInt): IO[(Env, Token)] = 
+  private def processToken(env: Env, chain: Chain, balance: BigInt): IO[Token] = 
     for t <- IO.fromTry(env.bluechipToken(chain))
-        u  = t.withBalance(t.decimals, Balance(balance))
-        e  = env.updateToken(t)
-    yield e -> t
+        u  = t.withBalance(t.decimals, Balance.fromRaw(balance, t.decimals))
+    yield u

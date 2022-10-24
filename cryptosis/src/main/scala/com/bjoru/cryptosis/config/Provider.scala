@@ -12,6 +12,7 @@ enum Provider:
   case BlockCypher
   case QuickNode
   case Elrond
+  case Solscan
 
 object Provider:
 

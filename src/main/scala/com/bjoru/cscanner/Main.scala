@@ -7,26 +7,47 @@ import cats.implicits.given
 import org.http4s.client.*
 import org.http4s.ember.client.*
 
-import com.bjoru.cryptos.api.*
-import com.bjoru.cryptos.types.*
+import com.bjoru.cryptosis.*
+import com.bjoru.cryptosis.types.*
+
+import scala.concurrent.duration.*
 
 object Main extends IOApp:
 
-  val cfgDir = getXdgDirectory(Xdg.Config) </> "crypto-scanner"
+  val cfgDir = getXdgDirectory(Xdg.Config) </> "cryptosis"
+  val chFile = getXdgDirectory(Xdg.State) </> "cryptosis" </> "token-cache.json"
 
-  val clientR = EmberClientBuilder.default[IO].build
+  val clientR = EmberClientBuilder.default[IO]
+                                  .withTimeout(2.minutes)
+                                  .build
 
   def run(args: List[String]): IO[ExitCode] = 
     for wallets <- Wallet.loadWallets(cfgDir </> "wallets.yaml")
-        apis    <- CryptoApi.loadApis(cfgDir)
-        synced  <- clientR.use(syncWallets(wallets, apis))
-        priced  <- clientR.use(checkPrices(synced, _))
-        //_       <- IO(priced.foreach(w => println(w.show)))
-        //_       <- IO(println("-------------------------------------"))
-        //_       <- IO(println(s"Portfolio Totals: $$${priced.foldLeft(Usd.Zero)(_ + _.valueUsd).show}"))
-        _       <- printPrices(priced).map(_.foreach(println))
+        env     <- clientR.use(Env.loadEnv(chFile))
+        synched <- clientR.use(ProviderApi.syncWallets(cfgDir, wallets, _).run(env))
+        upriced  = synched._2.foldLeft(Seq.empty[Token])(_ ++ _.unpricedTokens)
+        epriced <- clientR.use(GeckoPricer.fetchPrices(upriced, _)(synched._1))
+        wpriced  = synched._2.map(_.priceTokens(epriced))
+        _       <- epriced.saveEnv(chFile)
+        _       <- outputWallets(wpriced)
     yield ExitCode.Success
 
+  def outputWallets(wallets: Seq[Wallet]): IO[Unit] =
+    for balances <- IO.pure(wallets.foldLeft(Seq.empty[Token | Defi])(_ ++ _.balances.values))
+        _        <- putStrLn("Assets:")
+        _        <- putStrLn("---------------------------------------------------------")
+        _        <- printBalances(balances)
+        _        <- putStrLn("---------------------------------------------------------")
+    yield ()
+
+  def printBalances(items: Seq[Token | Defi]): IO[Unit] = IO {
+    items.foreach {
+      case t: Token => println(t.show)
+      case d: Defi  => println(d.show)
+    }
+  }
+
+    /*
   def syncWallets(wallets: Seq[Wallet], apis: Seq[CryptoApi])(client: Client[IO]): IO[Seq[Wallet]] =
     Foldable[Seq].foldM(apis, wallets) {
       case (wx, api) => api.syncWallets(wx)(client)
@@ -48,3 +69,4 @@ object Main extends IOApp:
         s  = s"${w.chain} ($a) $b ${t.symbol} ${t.valueUsd.show}"
     yield s //++ " $" ++ t.valueUsd.show
   }
+  */

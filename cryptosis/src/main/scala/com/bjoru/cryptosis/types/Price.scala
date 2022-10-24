@@ -15,6 +15,8 @@ object Price:
 
   given Show[Price] = Show.show(curFormat.format(_))
 
+  given Decoder[Price] = Decoder.decodeBigDecimal.emap(p => Right(apply(p)))
+
   extension (usd: Price)
     def +(other: Price): Price = usd + other
     def *(other: BigDecimal): Price = usd * other

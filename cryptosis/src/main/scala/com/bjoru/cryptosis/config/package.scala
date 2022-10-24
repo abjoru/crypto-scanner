@@ -27,8 +27,9 @@ def loadJsonFile[T](file: FilePath)(using Decoder[T]): IO[T] =
       res  <- IO.fromEither(json.as[T])
   yield res
 
-def saveJsonFile[T](file: FilePath, data: T)(using Encoder[T]): IO[Unit] = IO {
-  val writer = new BufferedWriter(new FileWriter(file.toFile))
-  writer.write(data.asJson.spaces2)
-  writer.close
-}
+def saveJsonFile[T](file: FilePath, data: T)(using Encoder[T]): IO[Unit] = 
+  for dir <- file.mkdirs
+      wr   = BufferedWriter(FileWriter(file.toFile))
+      _   <- IO(wr.write(data.asJson.spaces2))
+      _   <- IO(wr.close)
+  yield ()

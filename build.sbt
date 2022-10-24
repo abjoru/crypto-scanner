@@ -114,11 +114,7 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(
-    cryptosis,
-    bitcoinApi, ethereumApi, solanaApi, elrondApi, dogecoinApi, avalancheApi,
-    binanceApi, polygonApi, fantomApi, harmonyApi
-  )
+  .dependsOn(cryptosis)
   .settings(
     name := "crypto-scanner",
     libraryDependencies ++= Seq(

@@ -2,6 +2,8 @@ package com.bjoru.cryptosis.types
 
 import cats.Show
 
+import io.circe.Decoder
+
 import java.text.NumberFormat
 
 opaque type Balance = BigDecimal
@@ -11,6 +13,8 @@ object Balance:
   val numFormat = NumberFormat.getNumberInstance
 
   given Show[Balance] = Show.show(numFormat.format(_))
+
+  given Decoder[Balance] = Decoder.decodeBigDecimal.emap(Right(_))
 
   extension (b: Balance)
     def isEmpty: Boolean = b == Zero
@@ -23,6 +27,8 @@ object Balance:
     case v                  => BigDecimal(value)
 
   def apply(value: BigInt): Balance = BigDecimal(value)
+
+  def fromBigDecimal(value: BigDecimal): Balance = value
 
   def fromRaw(value: BigInt | String, decimals: Int): Balance = value match
     case v: BigInt => BigDecimal(v) / math.pow(10, decimals)

@@ -48,9 +48,9 @@ object Token:
       case (s, c, None)    => Id.create(s.lower, c.str)
 
   given Show[Token] = Show.show {
-    case v: BaseToken              => v.symbol.show
-    case v: BalancedToken          => s"${v.balance.show} ${v.symbol.show}"
-    case v: PricedAndBalancedToken => s"${v.balance.show} ${v.symbol.show} @ ${v.price.show}"
+    case v: BaseToken              => s"${v.chain} ${v.symbol.show}"
+    case v: BalancedToken          => s"${v.chain} ${v.balance.show} ${v.symbol.show}"
+    case v: PricedAndBalancedToken => s"${v.chain} ${v.balance.show} ${v.symbol.show} @ ${v.price.show} = ${v.valueUsd.getOrElse(Price.Zero).show} (${v.contract.map(_.str).getOrElse("")})"
   }
 
   given Encoder[Token] = Encoder.instance { token =>
@@ -107,14 +107,19 @@ object Token:
       case v: PricedAndBalancedToken => v.contract
 
     def missingPrice: Boolean = t match
-      case v: PricedAndBalancedToken => true
-      case _                         => false
+      case v: PricedAndBalancedToken => v.price == Price.Zero
+      case _                         => true
 
     def valueUsd: Try[Price] = t match
       case v: PricedAndBalancedToken => 
         Success(v.price * v.balance.toBigDecimal)
       case _ =>
         Failure(new Exception(s"No price defined for ${t.show}"))
+
+    def withChain(chain: Chain): Token = t match
+      case v: BaseToken              => v.copy(chain = chain)
+      case v: BalancedToken          => v.copy(chain = chain)
+      case v: PricedAndBalancedToken => v.copy(chain = chain)
 
     def withBalance(decimals: Int, balance: Balance): Token = t match
       case BaseToken(i, n, s, c, a) =>
@@ -132,6 +137,26 @@ object Token:
       case v: PricedAndBalancedToken =>
         v.copy(price = price)
 
+    def base(baseToken: Token): Token = baseToken match
+      case v: BaseToken => t
+      case v: BalancedToken => v.copy(
+        geckoId = t.geckoId,
+        name    = t.name,
+        symbol  = t.symbol,
+        contract = t.contract.orElse(v.contract)
+      )
+      case v: PricedAndBalancedToken => v.copy(
+        geckoId = t.geckoId,
+        name    = t.name,
+        symbol  = t.symbol,
+        contract = t.contract.orElse(v.contract)
+      )
+
+    def isEmpty: Boolean = t match
+      case v: BalancedToken          => v.balance.isEmpty
+      case v: PricedAndBalancedToken => v.balance.isEmpty
+      case _                         => true
+
   def apply(
     id:       String,
     name:     String, 
@@ -148,3 +173,14 @@ object Token:
     decimals: Int,
     contract: Option[Address]
   ): Token = BalancedToken(id, name, symbol, chain, decimals, contract, Balance.Zero)
+
+  def apply(
+    id:       String,
+    name:     String,
+    symbol:   Symbol,
+    chain:    Chain,
+    decimals: Int,
+    contract: Address,
+    balance:  Balance,
+    price:    Price
+  ): Token = PricedAndBalancedToken(id, name, symbol, chain, decimals, Some(contract), balance, price)

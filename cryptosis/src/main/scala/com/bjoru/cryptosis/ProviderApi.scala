@@ -15,9 +15,16 @@ trait ProviderApi:
 
   def syncWallets(wallets: Seq[Wallet], client: Client[IO])(env: Env): IO[(Env, Seq[Wallet])] = 
     val (supported, unsupported) = wallets.partition(w => supportedChains.contains(w.chain))
-    doSync(supported, client, env).map(kv => kv._1 -> (kv._2++ unsupported))
+    doSync(supported, env)(using client).map(kv => kv._1 -> (kv._2 ++ unsupported))
 
-  protected def doSync(wallets: Seq[Wallet], client: Client[IO], env: Env): IO[(Env, Seq[Wallet])]
+  protected def doSync(wallets: Seq[Wallet], env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])]
+
+  def foreachWallet(env: Env, wallets: Seq[Wallet])(
+    f: (Env, Wallet) => IO[(Env, Wallet)]
+  )(using Client[IO]): IO[(Env, Seq[Wallet])] =
+    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
+      case ((e, ws), w) => f(e, w).map(v => v._1 -> (ws :+ v._2))
+    }
 
 object ProviderApi:
 
@@ -34,6 +41,10 @@ object ProviderApi:
   private def resolveApis(endpoints: Map[Provider, Endpoint], filters: Seq[TokenFilter]) =
     val apis = endpoints.collect {
       case (Provider.BlockCypher, e) => providers.BlockCypher(e)
+      case (Provider.CovalentHQ, e)  => providers.CovalentHQ(e, filters)
+      case (Provider.Solscan, e)     => providers.Solscan(e, filters)
+      case (Provider.Elrond, e)      => providers.Elrond(e, filters)
+      case (Provider.Zapper, e)      => providers.Zapper(e)
     }
 
     apis.toSeq

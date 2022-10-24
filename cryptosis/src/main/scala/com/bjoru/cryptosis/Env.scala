@@ -19,10 +19,10 @@ class Env(val registry: TokenRegistry):
   def updateToken(token: Token): Env =
     Env(registry.updateToken(token))
 
-  def updatePrice(geckoId: String, price: Price): Env =
-    Env(registry.updatePrice(geckoId, price))
+  def updatePrice(id: Id, price: Price): Env =
+    Env(registry.updatePrice(id, price))
 
-  def updatePrices(prices: Seq[(String, Price)]): Env =
+  def updatePrices(prices: Seq[(Id, Price)]): Env =
     Env(registry.updatePrices(prices))
 
   def findTokenById(id: Id): Option[Token] =
@@ -36,6 +36,17 @@ class Env(val registry: TokenRegistry):
 
   def bluechipToken(chain: Chain): Try[Token] =
     registry.bluechipFor(chain)
+
+  def priceOf(token: Token): Token = 
+    registry.priceOf(token)
+
+  def resolveAndUpdate(token: Token): (Env, Token) =
+    val (tr, t2) = registry.resolveAndUpdate(token)
+    Env(tr) -> t2
+
+  def resolveAndUpdateAll(tokens: Seq[Token]): (Env, Seq[Token]) =
+    val (tr, tx) = registry.resolveAndUpdateAll(tokens)
+    Env(tr) -> tx
 
   def saveEnv(cacheFile: FilePath): IO[Unit] =
     registry.saveCache(cacheFile)
@@ -56,6 +67,12 @@ object Env:
     val listOfLists = gtokens.map { 
       case GToken(id@"bitcoin", sym@Symbol.Btc, name, _) =>
         Seq(Token(id, name, sym, Chain.Bitcoin, 8, None))
+      case GToken(id@"dogecoin", sym@Symbol.Doge, name, _) =>
+        Seq(Token(id, name, sym, Chain.Dogecoin, 8, None))
+      case GToken(id@"solana", sym@Symbol.Sol, name, _) =>
+        Seq(Token(id, name, sym, Chain.Solana, 8, None))
+      case GToken(id@"elrond-erd-2", sym@Symbol.Egld, name, _) =>
+        Seq(Token(id, name, sym, Chain.Elrond, 18, None))
       case GToken(id, sym, name, pfms) if pfms.isEmpty =>
         Seq(Token(id, name, sym, resolveChain(id), None))
       case GToken(id, sym, name, pfms) =>

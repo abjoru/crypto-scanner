@@ -5,7 +5,7 @@ import io.circe.*
 import pureconfig.ConfigReader
 import pureconfig.error.ExceptionThrown
 
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 enum Chain(val symbol: Symbol):
   case Bitcoin   extends Chain(Symbol.Btc)
@@ -36,4 +36,8 @@ object Chain:
     def str: String = c.toString.toLowerCase
 
   def fromString(str: String): Try[Chain] =
-    Try(Chain.valueOf(str.capitalize))
+    Try(Chain.valueOf(str.capitalize)).orElse(fromCustomStr(str))
+
+  private def fromCustomStr(str: String): Try[Chain] = str match
+    case "binance-smart-chain" => Success(Chain.Binance)
+    case _                     => Failure(Exception(s"Cannot decode '$str' as Chain!"))
