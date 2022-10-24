@@ -32,6 +32,12 @@ object GToken:
       case Chain.Dogecoin  => "dogechain"
       case Chain.Polkadot  => "polkadot"
       case Chain.Cardano   => "cardano"
+      case Chain.Arbitrum  => "arbitrum-one"
+      case Chain.Optimism  => "optimistic-ethereum"
+      case Chain.Moonriver => "moonriver"
+      case Chain.Aurora    => "aurora"
+      case Chain.Celo      => "celo"
+      case Chain.Gnosis    => "xdai"
       case Chain.Unknown   => "<unknown>"
 
 

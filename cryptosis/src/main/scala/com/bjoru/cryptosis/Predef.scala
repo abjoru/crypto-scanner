@@ -10,6 +10,10 @@ import scala.util.Try
 import java.nio.file.{Path, Paths}
 
 import java.io.File
+import java.time.Instant
+import java.time.temporal.TemporalUnit
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 export config.{loadYamlFile, loadJsonFile, saveJsonFile}
 export config.{Endpoint, TokenFilter, Provider}
@@ -43,8 +47,20 @@ extension (v: File)
   def </>(o: String): FilePath = v.toPath.resolve(o)
 
 extension (v: Path)
+
   def </>(o: String): FilePath = v.resolve(o)
+
   def exists: Boolean = v.toFile.exists()
+
+  def delete: Boolean = v.toFile.delete()
+
+  def expired(days: Int): Boolean = v.exists match
+    case true if v.toFile.isFile =>
+      val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(v.toFile.lastModified), ZoneId.systemDefault)
+      val target = ts.plusDays(days)
+      target.isAfter(LocalDateTime.now)
+    case _ => false
+
   def mkdirs: IO[Boolean] = v.exists match
     case false if v.toFile.isDirectory  => IO(v.toFile.mkdirs())
     case false                          => IO(v.toFile.getParentFile.mkdirs())

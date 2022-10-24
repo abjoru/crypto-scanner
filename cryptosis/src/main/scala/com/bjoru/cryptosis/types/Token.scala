@@ -184,3 +184,9 @@ object Token:
     balance:  Balance,
     price:    Price
   ): Token = PricedAndBalancedToken(id, name, symbol, chain, decimals, Some(contract), balance, price)
+
+  def fromExchange(
+    symbol:  Symbol,
+    chain:   Chain,
+    balance: Balance
+  ): Token = BalancedToken(symbol.lower, symbol.cap, symbol, chain, 18, None, balance)

@@ -38,15 +38,7 @@ class Zapper(ep: Endpoint) extends ProviderApi:
   )
 
   def zapperUri(wallets: Seq[Wallet]) = 
-    ep.uri / "balances"
-           +? ("addresses[]", wallets.map(_.address.str).mkString(","))
-           +? ("networks[]", "ethereum")
-           +? ("networks[]", "binance-smart-chain")
-           +? ("networks[]", "avalanche")
-           +? ("networks[]", "fantom")
-           +? ("networks[]", "polygon")
-           +? ("networks[]", "harmony")
-           +? ("bundled", false)
+    ep.uri / "balances" +? ("addresses[]", wallets.map(_.address.str).mkString(",")) +? ("bundled", false)
 
   protected def doSync(wallets: Seq[Wallet], env: Env)(using client: Client[IO]): IO[(Env, Seq[Wallet])] =
     for u  <- IO.pure(zapperUri(wallets))

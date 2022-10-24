@@ -27,11 +27,16 @@ object Symbol:
   val Doge  = Symbol("doge")
   val Dot   = Symbol("dot")
   val Ada   = Symbol("ada")
+  val Op    = Symbol("op")
+  val Xdai  = Symbol("xdai")
+  val Celo  = Symbol("celo")
+  val Movr  = Symbol("movr")
 
   val Unknown = Symbol("<unknown>")
 
   extension (s: Symbol)
     def lower: String = s.toLowerCase
     def upper: String = s.toUpperCase
+    def cap: String   = s.capitalize
 
   def apply(str: String): Symbol = str.toLowerCase

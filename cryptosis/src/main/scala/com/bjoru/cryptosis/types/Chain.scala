@@ -20,6 +20,12 @@ enum Chain(val symbol: Symbol):
   case Dogecoin  extends Chain(Symbol.Doge)
   case Polkadot  extends Chain(Symbol.Dot)
   case Cardano   extends Chain(Symbol.Ada)
+  case Optimism  extends Chain(Symbol.Op)
+  case Gnosis    extends Chain(Symbol.Xdai)
+  case Arbitrum  extends Chain(Symbol.Eth)
+  case Celo      extends Chain(Symbol.Celo)
+  case Moonriver extends Chain(Symbol.Movr)
+  case Aurora    extends Chain(Symbol.Eth)
   case Unknown   extends Chain(Symbol.Unknown)
 
 object Chain:
