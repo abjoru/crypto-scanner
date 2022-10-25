@@ -23,13 +23,9 @@ object Main extends IOApp:
 
   def run(args: List[String]): IO[ExitCode] = 
     for wallets <- Wallet.loadWallets(cfgDir </> "wallets.yaml")
-        env     <- clientR.use(Env.loadEnv(chFile))
-        synched <- clientR.use(ProviderApi.syncWallets(cfgDir, wallets, _).run(env))
-        upriced  = synched._2.foldLeft(Seq.empty[Token])(_ ++ _.unpricedTokens)
-        epriced <- clientR.use(GeckoPricer.fetchPrices(upriced, _)(synched._1))
-        wpriced  = synched._2.map(_.priceTokens(epriced))
-        _       <- epriced.saveEnv(chFile)
-        _       <- outputWallets(wpriced)
+        synched <- clientR.use(ProviderApi.syncWallets(cfgDir, wallets)(using _))
+        priced  <- clientR.use(c => synched.traverse(_.priceTokens(using c)))
+        _       <- outputWallets(priced)
     yield ExitCode.Success
 
   def outputWallets(wallets: Seq[Wallet]): IO[Unit] =

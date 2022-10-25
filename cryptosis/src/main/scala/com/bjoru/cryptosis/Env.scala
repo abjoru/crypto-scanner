@@ -24,6 +24,7 @@ import scala.concurrent.duration.*
 object Env:
 
   val cacheDir = getXdgDirectory(Xdg.Cache) </> "cryptosis"
+
   val CACHE_TOKEN_FILE = cacheDir </> "cryptosis-tokens.json"
   val GECKO_TOKEN_FILE = cacheDir </> "coingecko-tokens.json"
   val GECKO_PRICE_FILE = cacheDir </> "coingecko-prices.json"
@@ -41,12 +42,37 @@ object Env:
           yield r._2
     }
 
-  def priced(tokens: Token*)(using Client[IO]): IO[Seq[Token]] = ???
+  def priced(tokens: Token*)(using Client[IO]): IO[Seq[Token]] =
+    for priced  <- tokenPrices
+        missing  = tokens.filterNot(t => priced.contains(t.id))
+        fetched <- fetchCoingeckoPrices(missing)
+        index    = priced ++ fetched
+        _       <- saveJsonFile(GECKO_PRICE_FILE, index)
+    yield tokens.map(t => index.get(t.id).map(t.withPrice(_)).getOrElse(t))
 
-  def bluechipToken(chain: Chain)(using Client[IO]): IO[Token] = ???
+  def bluechipToken(chain: Chain)(using Client[IO]): IO[Token] =
+    CoingeckoMapper.bluechipSymbolTable.get(chain.symbol) match
+      case Some(gid) =>
+        val maybeTok = cachedTokens.map(_.values.find(_.geckoId == gid)).flatMap {
+          case Some(t) => IO.pure(Some(t))
+          case None => coingeckoTokens.map(_.find(_.geckoId == gid))
+        }
+
+        maybeTok.flatMap {
+          case Some(t) => IO.pure(t)
+          case None    => IO.raiseError(Exception(s"No bluechip token for $chain"))
+        }
+      case None => IO.raiseError(Exception(s"No bluechip token for $chain"))
 
   def findById(id: Id): IO[Token] =
     cachedTokens.map(v => v(id))
+
+  def findByGeckoId(gid: String)(using Client[IO]): IO[Token] = 
+    coingeckoTokens.flatMap { lst =>
+      lst.find(_.geckoId == gid) match
+        case Some(t) => IO.pure(t)
+        case None    => IO.raiseError(Exception(s"No such token: gid=$gid"))
+    }
 
   def findBySymbol(symbol: Symbol, chain: Chain, nameHint: String = ""): IO[Token] =
     def find(tx: List[Token]) = (tx, nameHint) match
@@ -75,6 +101,12 @@ object Env:
         _      <- updateCache(result, cached)
     yield result
 
+  def resolveExchangeTokens(tokens: Seq[Token])(using Client[IO]): IO[Seq[Token]] =
+    for rs <- tokens.traverse(t => findBySymbol(t.symbol, t.chain, t.name))
+        ch <- cachedTokens
+        _  <- updateCacheForAll(rs, ch)
+    yield rs
+
   def resolveToken(token: Token)(using Client[IO]): IO[Token] =
     for cached <- cachedTokens
         geckos <- coingeckoTokens
@@ -98,6 +130,13 @@ object Env:
     if cache.contains(t.id)
       then IO.unit
       else saveJsonFile(CACHE_TOKEN_FILE, cache.values.toSeq :+ t)
+
+  private def updateCacheForAll(tx: Seq[Token], cache: Map[Id, Token]): IO[Unit] =
+    val missing = tx.filterNot(t => cache.contains(t.id))
+
+    if missing.nonEmpty
+      then saveJsonFile(CACHE_TOKEN_FILE, cache.values.toSeq ++ missing)
+      else IO.unit
 
   private def updatePrices(tx: Seq[Token], prices: Map[Id, Price]): IO[Unit] =
     val newPrices = tx.filter(t => !prices.contains(t.id))
@@ -151,9 +190,8 @@ object Env:
       case Some(c) => CoingeckoMapper.byContract(c, geckos)
       case None    => None
 
-    val result = mTok.getOrElse {
-      val group = geckos.filter(t => t.symbol == token.symbol && t.chain == token.chain)
-      CoingeckoMapper.bestMatched(token, group)
-    }
-
-    IO.pure(result)
+    mTok match
+      case Some(t) => IO.pure(t.base(token))
+      case None    =>
+        val grps = geckos.filter(t => t.symbol == token.symbol && t.chain == token.chain)
+        IO.fromTry(CoingeckoMapper.bestMatched(token, grps)).map(_.base(token))

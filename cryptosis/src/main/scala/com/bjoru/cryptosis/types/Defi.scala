@@ -63,10 +63,10 @@ object Defi:
 
   extension (d: Defi)
 
-    def id: String = d match
-      case v: Stake => v.id
-      case v: Farm  => v.id
-      case v: Pool  => v.id
+    def providerId: String = d match
+      case v: Stake => v.providerId
+      case v: Farm  => v.providerId
+      case v: Pool  => v.providerId
 
     def name: String = d match
       case v: Stake => v.name

@@ -40,18 +40,10 @@ class CovalentHQ(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
     Chain.Harmony
   )
 
-  protected def doSync(wallets: Seq[Wallet], env: Env)(using client: Client[IO]): IO[(Env, Seq[Wallet])] =
-    foreachWallet(env, wallets) {
-      case (e, w) if w.isMultichain => multichain(w, client, e)
-      case (e, w)                   => balance(w, client, e)
-    }
-
-  private def doSyncWallets(env: Env, wallets: Seq[Wallet])(using client: Client[IO]): IO[(Env, Seq[Wallet])] =
-    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((e, acc), w) if w.isMultichain => 
-        multichain(w, client, e).map(kv => kv._1 -> (acc :+ kv._2))
-      case ((e, acc), w) =>
-        balance(w, client, e).map(kv => kv._1 -> (acc :+ kv._2))
+  protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
+    wallets.traverse {
+      case w if w.isMultichain => multichain(w)
+      case w                   => balance(w)
     }
 
   private def chainId(chain: Chain) = chain match
@@ -79,16 +71,12 @@ class CovalentHQ(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
     for a <- balanceUri(w)
         b <- cl.expect(a)(jsonOf[IO, Json])
         c  = b.hcursor.downField("data").downField("items").values.map(decode).getOrElse(Iterable.empty)
-        d  = env.resolveAndUpdateAll(filter(w.chain, c.toSeq).map(_.withChain(w.chain)))
-    yield d._1 -> w.addBalances(d._2)
+        d <- Env.resolveTokens(filter(w.chain, c.toSeq).map(_.withChain(w.chain)))
+    yield w.addBalances(d)
 
   private def multichain(w: Wallet)(using Client[IO]): IO[Wallet] =
-    val chains = supportedChains.filterNot(_ == Chain.Solana)
-
-    chains.foldLeftM(env -> w) {
-      case ((e, bw), ch) =>
-        val res = balance(w.withChain(ch), cl, e)
-        res.map(kv => kv._1 -> bw.merge(kv._2))
+    supportedChains.filterNot(_ == Chain.Solana).foldLeftM(w) {
+      case (w2, ch) => balance(w.withChain(ch)).map(w2.merge(_))
     }
 
   private def decode(jx: Iterable[Json]): Iterable[Token] =

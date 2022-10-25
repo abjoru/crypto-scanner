@@ -20,8 +20,6 @@ import com.bjoru.cryptosis.syntax.circe.*
 
 import java.time.Instant
 
-// TODO move to exchanges package and use separate config
-// for this. i.e. exchanges.yaml
 class BinanceUS(ep: Endpoint) extends ExchangeApi:
 
   given Decoder[Token] = Decoder.instance { hc =>
@@ -32,8 +30,12 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi:
         chs <- nlt.traverse(j => (j <\> "network").as[String])
         chx  = extractNetwork(sym, chs)
         bal  = Balance.fromBigDecimal(BigDecimal(fre) + BigDecimal(loc))
-    yield Token.fromExchange(sym, chx, bal) // TODO consider special token lookup for exchanges
+    yield Token.fromExchange(sym, chx, bal)
   }
+
+  val SupportedStakingTokens = Map(
+    Symbol("dot") -> "polkadot"
+  )
 
   def signature(timestamp: Long) =
     for a <- IO.fromEither(ep.secret.fold(Left(Exception("Missing API secret!")))(Right(_)))
@@ -54,13 +56,16 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi:
 
   def mkGet(uri: Uri) = GET(uri).withHeaders(Header("X-MBX-APIKEY", ep.apiKey))
 
-  def sync(using client: Client[IO]): IO[Exchange] = ???
+  def sync(using client: Client[IO]): IO[Exchange] =
+    for bal <- balance
+        stk <- staking
+    yield Exchange("BinanceUS", bal, stk)
 
   def balance(using client: Client[IO]): IO[Seq[Token]] =
     for ts  <- IO.pure(Instant.now.toEpochMilli)
         url <- mkBalanceUri(ts)
         tok <- client.expect[Seq[Token]](url)
-        res <- processTokens(tok)
+        res <- Env.resolveExchangeTokens(tok)
     yield res
 
   def staking(using client: Client[IO]): IO[Seq[Defi]] =
@@ -69,14 +74,13 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi:
         res <- client.expect[Json](url)
         jsn <- (res <\> "data").asIO[Seq[Json]]
         tok <- jsn.traverse(balanceTuples)
-    yield ???
+        rx  <- tok.traverse(v => Env.findByGeckoId(v._1).map(t => t.withBalance(t.decimals, v._2)))
+    yield rx.map(t => Defi.Stake(s"binance${t.symbol.lower}", t.symbol.upper, t.chain, Seq(t)))
 
-  private def processTokens(tokens: Seq[Token]): IO[Seq[Token]] = ???
-
-  private def balanceTuples(json: Json): IO[(Symbol, Balance)] =
+  private def balanceTuples(json: Json): IO[(String, Balance)] =
     for sym <- (json <\> "asset").asIO[Symbol]
         bal <- (json <\> "stakingAmount").asIO[Balance]
-    yield sym -> bal
+    yield SupportedStakingTokens(sym) -> bal
 
   private def extractNetwork(symbol: Symbol, networks: Seq[String]): Chain =
     val chains = networks.map(_.toLowerCase).map {

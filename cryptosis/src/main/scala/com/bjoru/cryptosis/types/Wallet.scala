@@ -86,8 +86,8 @@ object Wallet:
       case _                          => false
     }
 
-  def loadWallets(path: FilePath): IO[Seq[Wallet]] = 
-    loadYamlFile[Seq[Wallet]](path)
+  def loadWallets(file: FilePath): IO[Seq[Wallet]] = 
+    loadYamlFile[Seq[Wallet]](file)
 
   def mergeWallets(a: Seq[Wallet], b: Seq[Wallet]): Seq[Wallet] =
     val bMap = b.map(v => v.address -> v).toMap

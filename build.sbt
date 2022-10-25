@@ -20,50 +20,6 @@ lazy val munitVersion = "0.7.29"
 // Modules //
 /////////////
 
-lazy val bitcoinApi = (project in file("chains/bitcoin"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-bitcoin")
-
-lazy val ethereumApi = (project in file("chains/ethereum"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-ethereum")
-
-lazy val binanceApi = (project in file("chains/binance"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-binance")
-
-lazy val avalancheApi = (project in file("chains/avalanche"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-avalanche")
-
-lazy val polygonApi = (project in file("chains/polygon"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-polygon")
-
-lazy val fantomApi = (project in file("chains/fantom"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-fantom")
-
-lazy val solanaApi = (project in file("chains/solana"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-solana")
-
-lazy val elrondApi = (project in file("chains/elrond"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-elrond")
-
-lazy val dogecoinApi = (project in file("chains/dogecoin"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-dogecoin")
-
-lazy val harmonyApi = (project in file("chains/harmony"))
-  .dependsOn(core)
-  .settings(name := "crypto-scanner-harmony")
-
-//////////////
-// Standard //
-//////////////
-
 lazy val cryptosis = (project in file("cryptosis"))
   .settings(
     name := "cryptosis",
@@ -83,29 +39,10 @@ lazy val cryptosis = (project in file("cryptosis"))
     )
   )
 
-lazy val core = (project in file("core"))
-  .settings(
-    name := "crypto-scanner-core",
-    libraryDependencies ++= Seq(
-      "org.typelevel"         %% "cats-core"       % catsVersion,
-      "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
-      "io.circe"              %% "circe-core"      % circeVersion,
-      "io.circe"              %% "circe-parser"      % circeVersion,
-      "io.circe"              %% "circe-generic"   % circeVersion,
-      "org.http4s"            %% "http4s-core"     % http4sVersion,
-      "org.http4s"            %% "http4s-ember-client" % http4sVersion,
-      "org.http4s"            %% "http4s-circe"        % http4sVersion,
-      "org.http4s"            %% "http4s-dsl"          % http4sVersion,
-      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
-      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
-      ("com.github.vickumar1981" %% "stringdistance" % stringdistVersion).cross(CrossVersion.for3Use2_13)
-    )
-  )
-
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(ethereumApi, elrondApi, bitcoinApi, dogecoinApi, solanaApi, cryptosis)
+  .dependsOn(cryptosis)
   .settings(
-    name := "crypto-scanner-testkit",
+    name := "cryptosis-testkit",
     libraryDependencies ++= Seq(
       "org.scalameta" %% "munit"            % munitVersion % Test,
       "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
@@ -116,7 +53,7 @@ lazy val testKit = (project in file("testKit"))
 lazy val root = (project in file("."))
   .dependsOn(cryptosis)
   .settings(
-    name := "crypto-scanner",
+    name := "cryptosis",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect" % catsEffectVersion
     )

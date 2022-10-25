@@ -58,17 +58,16 @@ object GToken:
     yield GToken(a, b, c, d)
   }
 
-  private def decodeMap(json: Json) = 
+  private def decodeMap(json: Json): Map[Chain, Option[Address]] = 
     val keys = json.hcursor.keys.map(_.toList).getOrElse(List.empty)
 
     val initList = keys.traverse { key =>
-      for k <- keyToChain(key).toCirceResult
-          v <- json.hcursor.downField(key).as[Option[Address]]
-      yield k -> v
+      json.hcursor.downField(key).as[Option[Address]].map(key -> _)
     }
 
-    // remove unwanted chains
-    initList.map(_.toMap).getOrElse(Map.empty)
+    val chainMap = initList.map(_.map(v => keyToChain(v._1).map(_ -> v._2)).flatten.toMap)
+
+    chainMap.getOrElse(Map.empty)
 
   def keyToChain(key: String): Option[Chain] = key match
     case "bitcoin"             => Some(Chain.Bitcoin)

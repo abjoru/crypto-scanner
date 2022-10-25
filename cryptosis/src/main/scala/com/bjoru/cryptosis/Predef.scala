@@ -60,8 +60,8 @@ extension (v: Path)
     case true if v.toFile.isFile =>
       val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(v.toFile.lastModified), ZoneId.systemDefault)
       val target = ts.plus(toJava(duration))
-      target.isAfter(LocalDateTime.now)
-    case _ => false
+      target.isBefore(LocalDateTime.now)
+    case _ => true
 
   def mkdirs: IO[Boolean] = v.exists match
     case false if v.toFile.isDirectory  => IO(v.toFile.mkdirs())

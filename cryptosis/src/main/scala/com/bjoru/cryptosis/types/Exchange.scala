@@ -32,3 +32,14 @@ object Exchange:
         case xs if xs.isEmpty => Price.Zero
         case xs               => xs.reduce(_ + _)
       }
+
+  def apply(name: String, tokens: Seq[Token], defi: Seq[Defi]): Exchange =
+    val m1 = tokens.foldLeft(Map.empty[Id, Token | Defi]) {
+      case (acc, t) => acc + (t.id -> t)
+    }
+
+    val m2 = defi.foldLeft(m1) {
+      case (acc, d) => acc + (d.id -> d)
+    }
+
+    Exchange(name, m2)

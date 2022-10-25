@@ -16,6 +16,7 @@ import com.bjoru.cryptosis.providers.Zapper
 import com.bjoru.cryptosis.syntax.circe.*
 
 import scala.io.Source
+import scala.concurrent.duration.*
 
 import munit.CatsEffectSuite
 
@@ -31,14 +32,6 @@ class ZapperDecoderTest extends CatsEffectSuite:
   def loadSource(name: String) = 
     Source.fromResource(s"com/bjoru/cryptos/api/$name", getClass.getClassLoader)
 
-  //test("Decode TraderJoe") {
-    //for a <- IO.fromEither(parse(loadSource("trader-joe-bal.json").getLines.mkString))
-        //e <- clientR.use(Env.loadEnv(path))
-        //r <- ZapperDecoder.decodeApps(a, e)
-        //_ <- IO(r._2.foreach(v => println(v.show)))
-    //yield assert(true)
-  //}
-
   test("Decode all Zapper Apps") {
     val src = loadSource("resp-new-bal.json")
     val lns = src.getLines.filter(Zapper.LineFilter).toList.map(_.dropWhile(_ != '{'))
@@ -46,10 +39,9 @@ class ZapperDecoderTest extends CatsEffectSuite:
     for j  <- IO.fromEither(lns.traverse(parse(_)))
         xa <- appGroups(j)(_.filter(_._1._1 == "tokens"))
         xb <- appGroups(j)(_.filterNot(_._1._1 == "tokens"))
-        e  <- clientR.use(Env.loadEnv(path))
-        r1 <- ZapperDecoder.decodeTokenApps(e, xa)
-        r2 <- ZapperDecoder.decodeDefiApps(r1._1, xb)
-        wr  = Wallet.mergeWallets(r1._2, r2._2)
+        r1 <- clientR.use(ZapperDecoder.decodeTokenApps(xa)(using _))
+        r2 <- clientR.use(ZapperDecoder.decodeDefiApps(xb)(using _))
+        wr  = Wallet.mergeWallets(r1, r2)
         _  <- IO(wr.foreach(_.balances.foreach(printItems)))
     yield assert(true)
   }

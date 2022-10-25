@@ -55,7 +55,7 @@ object Token:
 
   given Encoder[Token] = Encoder.instance { token =>
     Json.obj(
-      "id"       -> token.id.asJson,
+      "id"       -> token.geckoId.asJson,
       "name"     -> token.name.asJson,
       "symbol"   -> token.symbol.asJson,
       "chain"    -> token.chain.asJson,
@@ -115,6 +115,16 @@ object Token:
         Success(v.price * v.balance.toBigDecimal)
       case _ =>
         Failure(new Exception(s"No price defined for ${t.show}"))
+
+    def withName(name: String): Token = t match
+      case v: BaseToken              => v.copy(name = name)
+      case v: BalancedToken          => v.copy(name = name)
+      case v: PricedAndBalancedToken => v.copy(name = name)
+
+    def withSymbol(symbol: Symbol): Token = t match
+      case v: BaseToken              => v.copy(symbol = symbol)
+      case v: BalancedToken          => v.copy(symbol = symbol)
+      case v: PricedAndBalancedToken => v.copy(symbol = symbol)
 
     def withChain(chain: Chain): Token = t match
       case v: BaseToken              => v.copy(chain = chain)

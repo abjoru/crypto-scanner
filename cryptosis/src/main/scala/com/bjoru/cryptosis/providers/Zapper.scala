@@ -40,7 +40,7 @@ class Zapper(ep: Endpoint) extends ProviderApi:
   def zapperUri(wallets: Seq[Wallet]) = 
     ep.uri / "balances" +? ("addresses[]", wallets.map(_.address.str).mkString(",")) +? ("bundled", false)
 
-  protected def doSync(wallets: Seq[Wallet], env: Env)(using client: Client[IO]): IO[(Env, Seq[Wallet])] =
+  protected def doSync(wallets: Seq[Wallet])(using client: Client[IO]): IO[Seq[Wallet]] =
     for u  <- IO.pure(zapperUri(wallets))
         _  <- putStrLn("zapper: making call...")
         s  <- client.expect[String](GET(u, Auth))(using EntityDecoder.text[IO])
@@ -51,9 +51,9 @@ class Zapper(ep: Endpoint) extends ProviderApi:
         da <- defiApps(j, wallets)
         ta <- tokenApps(j, wallets)
 
-        r1 <- ZapperDecoder.decodeDefiApps(env, da)
-        r2 <- ZapperDecoder.decodeTokenApps(r1._1, ta)
-    yield r2
+        r1 <- ZapperDecoder.decodeDefiApps(da)
+        r2 <- ZapperDecoder.decodeTokenApps(ta)
+    yield Wallet.mergeWallets(r1, r2)
 
   def indexMap(data: Seq[Json]): IO[Map[(String, Chain, Address), Json]] =
     val indexes = data.traverse { json =>
