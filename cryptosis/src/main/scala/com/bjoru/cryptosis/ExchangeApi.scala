@@ -9,7 +9,7 @@ import com.bjoru.cryptosis.config.*
 
 trait ExchangeApi:
 
-  def sync(env: Env, client: Client[IO]): IO[(Env, Exchange)]
+  def sync(using Client[IO]): IO[Exchange]
 
 object ExchangeApi:
 

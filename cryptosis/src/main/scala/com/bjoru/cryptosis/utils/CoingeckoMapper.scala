@@ -41,6 +41,16 @@ object CoingeckoMapper:
     "polkadot"            -> Chain.Polkadot
   )
 
+  def byContract(contract: Address, tokens: Seq[Token]): Option[Token] =
+    tokens.find(_.contract.map(_ == contract).getOrElse(false))
+
+  def byName(name: String, tokens: Seq[Token]): Option[Token] =
+    val scores = score(name, tokens)(_.name)
+    val bestMatched = scores.maxBy(_._2)
+    if bestMatched._2 > 0.8
+      then Some(bestMatched._1)
+      else None
+
   def processGeckos(tokens: Seq[GToken]): Seq[Token] = 
     val tokenList = tokens.map {
       case GToken(id@"bitcoin", sym@Symbol.Btc, name, _) =>

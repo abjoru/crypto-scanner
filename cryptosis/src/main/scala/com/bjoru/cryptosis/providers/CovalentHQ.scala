@@ -75,14 +75,14 @@ class CovalentHQ(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
         uri  <- IO.fromEither(Uri.fromString(form))
     yield uri
 
-  private def balance(w: Wallet, cl: Client[IO], env: Env): IO[(Env, Wallet)] =
+  private def balance(w: Wallet)(using cl: Client[IO]): IO[Wallet] =
     for a <- balanceUri(w)
         b <- cl.expect(a)(jsonOf[IO, Json])
         c  = b.hcursor.downField("data").downField("items").values.map(decode).getOrElse(Iterable.empty)
         d  = env.resolveAndUpdateAll(filter(w.chain, c.toSeq).map(_.withChain(w.chain)))
     yield d._1 -> w.addBalances(d._2)
 
-  private def multichain(w: Wallet, cl: Client[IO], env: Env): IO[(Env, Wallet)] =
+  private def multichain(w: Wallet)(using Client[IO]): IO[Wallet] =
     val chains = supportedChains.filterNot(_ == Chain.Solana)
 
     chains.foldLeftM(env -> w) {

@@ -17,6 +17,10 @@ object Id:
 
   given Show[Id] = Show.fromToString[Id]
 
+  given KeyEncoder[Id] = KeyEncoder.encodeKeyString //.contramap(v => v)
+
+  given KeyDecoder[Id] = KeyDecoder.decodeKeyString
+
   given Encoder[Id] = Encoder.encodeString.contramap(v => v)
 
   given Decoder[Id] = Decoder.decodeString.emapTry(v => Success(v))

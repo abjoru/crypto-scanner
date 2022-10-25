@@ -13,24 +13,17 @@ trait ProviderApi:
 
   val supportedChains: Seq[Chain]
 
-  def syncWallets(wallets: Seq[Wallet], client: Client[IO])(env: Env): IO[(Env, Seq[Wallet])] = 
+  def syncWallets(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] = 
     val (supported, unsupported) = wallets.partition(w => supportedChains.contains(w.chain))
-    doSync(supported, env)(using client).map(kv => kv._1 -> (kv._2 ++ unsupported))
+    doSync(supported).map(_ ++ unsupported)
 
-  protected def doSync(wallets: Seq[Wallet], env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])]
-
-  def foreachWallet(env: Env, wallets: Seq[Wallet])(
-    f: (Env, Wallet) => IO[(Env, Wallet)]
-  )(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((e, ws), w) => f(e, w).map(v => v._1 -> (ws :+ v._2))
-    }
+  protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]]
 
 object ProviderApi:
 
-  def syncWallets(cfgDir: FilePath, wallets: Seq[Wallet], client: Client[IO]): StateT[IO, Env, Seq[Wallet]] =
-    for pv <- StateT.liftF(loadApis(cfgDir))
-        rs <- StateT.apply(syncAllProviders(pv, wallets, client))
+  def syncWallets(cfgDir: FilePath, wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
+    for pv <- loadApis(cfgDir)
+        rs <- syncAllProviders(pv, wallets)
     yield rs
 
   def loadApis(cfgDir: FilePath): IO[Seq[ProviderApi]] = 
@@ -51,8 +44,8 @@ object ProviderApi:
 
   private def syncAllProviders(
     providers: Seq[ProviderApi], 
-    wallets:   Seq[Wallet], 
-    client:    Client[IO]
-  )(env: Env): IO[(Env, Seq[Wallet])] = providers.foldLeftM(env -> wallets) {
-    case ((env, wallets), api) => api.syncWallets(wallets, client)(env)
-  }
+    wallets:   Seq[Wallet]
+  )(using Client[IO]): IO[Seq[Wallet]] = 
+    providers.foldLeftM(wallets) {
+      case (ws, api) => api.syncWallets(ws)
+    }

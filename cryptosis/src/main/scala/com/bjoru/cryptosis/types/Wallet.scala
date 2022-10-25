@@ -4,6 +4,8 @@ import cats.data.StateT
 import cats.effect.IO
 import cats.implicits.*
 
+import org.http4s.client.Client
+
 import pureconfig.*
 
 import com.bjoru.cryptosis.*
@@ -58,19 +60,23 @@ object Wallet:
         case xs               => xs.reduce(_ + _)
       }
 
-    def priceTokens(env: Env): Wallet = w.copy(balances = w.balances.map {
-      case (i, t: Token) => i -> env.priceOf(t)
-      case (i, d: Defi.Stake) => i -> d.copy(
-        liquidity = d.liquidity.map(env.priceOf(_))
-      )
-      case (i, d: Defi.Farm)  => i -> d.copy(
-        liquidity = d.liquidity.map(env.priceOf(_)),
-        claimable = d.claimable.map(env.priceOf(_))
-      )
-      case (i, d: Defi.Pool) => i -> d.copy(
-        liquidity = d.liquidity.map(env.priceOf(_))
-      )
-    })
+    def priceTokens(using Client[IO]): IO[Wallet] = 
+      val newB = w.balances.toList.foldLeftM(Map.empty[Id, Item]) {
+        case (acc, (i, t: Token)) => 
+          Env.priced(t).map(v => acc + (i -> v.head))
+        case (acc, (i, d: Defi.Stake)) =>
+          Env.priced(d.liquidity: _*)
+            .map(v => acc + (i -> d.copy(liquidity = v)))
+        case (acc, (i, d: Defi.Farm)) =>
+          for a <- Env.priced(d.liquidity: _*)
+              b <- Env.priced(d.claimable: _*)
+          yield acc + (i -> d.copy(liquidity = a, claimable = b))
+        case (acc, (i, d: Defi.Pool)) =>
+          Env.priced(d.liquidity: _*)
+            .map(v => acc + (i -> d.copy(liquidity = v)))
+      }
+
+      newB.map(b => w.copy(balances = b))
 
     def merge(other: Wallet): Wallet = 
       w.addBalances(other.balances.values.toSeq)

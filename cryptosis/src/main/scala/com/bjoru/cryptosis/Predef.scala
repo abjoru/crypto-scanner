@@ -6,6 +6,8 @@ import io.circe.{HCursor, DecodingFailure as DF}
 import io.circe.Decoder.Result
 
 import scala.util.Try
+import scala.concurrent.duration.*
+import scala.jdk.javaapi.DurationConverters.toJava
 
 import java.nio.file.{Path, Paths}
 
@@ -54,10 +56,10 @@ extension (v: Path)
 
   def delete: Boolean = v.toFile.delete()
 
-  def expired(days: Int): Boolean = v.exists match
+  def expired(duration: FiniteDuration): Boolean = v.exists match
     case true if v.toFile.isFile =>
       val ts = LocalDateTime.ofInstant(Instant.ofEpochMilli(v.toFile.lastModified), ZoneId.systemDefault)
-      val target = ts.plusDays(days)
+      val target = ts.plus(toJava(duration))
       target.isAfter(LocalDateTime.now)
     case _ => false
 

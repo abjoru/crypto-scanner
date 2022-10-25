@@ -1,7 +1,7 @@
 package com.bjoru.cryptosis.providers
 
 import cats.effect.IO
-import cats.syntax.foldable.given
+import cats.syntax.traverse.given
 
 import io.circe.*
 import io.circe.syntax.{*, given}
@@ -32,23 +32,24 @@ class Elrond(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
 
   val supportedChains = Seq(Chain.Elrond)
 
-  protected def doSync(wallets: Seq[Wallet], env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    for a <- foreachWallet(env, wallets)(balances)
-        b <- foreachWallet(a._1, a._2)(egld)
+  protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
+    for a <- wallets.traverse(balances)
+        b <- a.traverse(egld)
     yield b
 
-  def egld(env: Env, wallet: Wallet)(using cl: Client[IO]): IO[(Env, Wallet)] =
+  def egld(wallet: Wallet)(using cl: Client[IO]): IO[Wallet] =
     for a <- cl.expect(ep.uri / "accounts" / wallet.address.str)(jsonOf[IO, Json])
-        b <- IO.fromTry(env.bluechipToken(Chain.Elrond))
+        b <- Env.bluechipToken(Chain.Elrond)
         c <- IO.fromEither(a.hcursor.downField("balance").as[String])
         d  = Balance.fromRaw(c, b.decimals)
         e  = b.withBalance(b.decimals, d)
-    yield env.updateToken(e) -> wallet.addBalance(e)
+        t <- Env.resolveToken(e)
+    yield wallet.addBalance(t)
 
-  def balances(env: Env, wallet: Wallet)(using cl: Client[IO]): IO[(Env, Wallet)] =
+  def balances(wallet: Wallet)(using cl: Client[IO]): IO[Wallet] =
     for a <- cl.expect[Seq[Token]](ep.uri / "accounts" / wallet.address.str / "tokens")
-        r  = env.resolveAndUpdateAll(filter(Chain.Elrond, a))
-    yield r._1 -> wallet.addBalances(r._2)
+        r <- Env.resolveTokens(filter(Chain.Elrond, a))
+    yield wallet.addBalances(r)
 
   private def filter(c: Chain, tx: Seq[Token]) =
     filters.find(_.chain == c).map(_.filterTokens(tx)).getOrElse(tx)

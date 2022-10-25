@@ -54,16 +54,16 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi:
 
   def mkGet(uri: Uri) = GET(uri).withHeaders(Header("X-MBX-APIKEY", ep.apiKey))
 
-  def sync(env: Env, client: Client[IO]): IO[(Env, Exchange)] = ???
+  def sync(using client: Client[IO]): IO[Exchange] = ???
 
-  def balance(env: Env, client: Client[IO]): IO[(Env, Seq[Token])] =
+  def balance(using client: Client[IO]): IO[Seq[Token]] =
     for ts  <- IO.pure(Instant.now.toEpochMilli)
         url <- mkBalanceUri(ts)
         tok <- client.expect[Seq[Token]](url)
-        res <- processTokens(env, tok)
+        res <- processTokens(tok)
     yield res
 
-  def staking(env: Env, client: Client[IO]): IO[(Env, Seq[Defi])] =
+  def staking(using client: Client[IO]): IO[Seq[Defi]] =
     for ts  <- IO.pure(Instant.now.toEpochMilli)
         url <- mkStakingUri(ts)
         res <- client.expect[Json](url)
@@ -71,7 +71,7 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi:
         tok <- jsn.traverse(balanceTuples)
     yield ???
 
-  private def processTokens(env: Env, tokens: Seq[Token]): IO[(Env, Seq[Token])] = ???
+  private def processTokens(tokens: Seq[Token]): IO[Seq[Token]] = ???
 
   private def balanceTuples(json: Json): IO[(Symbol, Balance)] =
     for sym <- (json <\> "asset").asIO[Symbol]

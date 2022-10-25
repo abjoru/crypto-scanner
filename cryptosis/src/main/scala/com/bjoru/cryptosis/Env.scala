@@ -1,106 +1,159 @@
 package com.bjoru.cryptosis
 
 import cats.effect.IO
+import cats.syntax.foldable.given
+import cats.syntax.traverse.given
 
-import org.http4s.*
-import org.http4s.dsl.io.*
+import io.circe.*
+
+import org.http4s.Uri
 import org.http4s.client.*
-import org.http4s.client.dsl.io.*
 import org.http4s.circe.*
 import org.http4s.circe.CirceEntityDecoder.given
+import org.http4s.implicits.uri
 
-import com.bjoru.cryptosis.config.GToken
+import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
+import com.bjoru.cryptosis.syntax.circe.*
+import com.bjoru.cryptosis.config.GToken
+import com.bjoru.cryptosis.utils.CoingeckoMapper
 
-import scala.util.Try
-
-class Env(val registry: TokenRegistry):
-
-  def updateToken(token: Token): Env =
-    Env(registry.updateToken(token))
-
-  def updatePrice(id: Id, price: Price): Env =
-    Env(registry.updatePrice(id, price))
-
-  def updatePrices(prices: Seq[(Id, Price)]): Env =
-    Env(registry.updatePrices(prices))
-
-  def findTokenById(id: Id): Option[Token] =
-    registry.findById(id)
-
-  def findTokenByContract(contract: Address): Option[Token] =
-    registry.findByContract(contract)
-
-  def resolveToken(token: Token): Option[Token] =
-    registry.resolveToken(token)
-
-  def bluechipToken(chain: Chain): Try[Token] =
-    registry.bluechipFor(chain)
-
-  def priceOf(token: Token): Token = 
-    registry.priceOf(token)
-
-  def resolveAndUpdate(token: Token): (Env, Token) =
-    val (tr, t2) = registry.resolveAndUpdate(token)
-    Env(tr) -> t2
-
-  def resolveAndUpdateAll(tokens: Seq[Token]): (Env, Seq[Token]) =
-    val (tr, tx) = registry.resolveAndUpdateAll(tokens)
-    Env(tr) -> tx
-
-  def saveEnv(cacheFile: FilePath): IO[Unit] =
-    registry.saveCache(cacheFile)
+import scala.util.{Try, Success, Failure}
+import scala.concurrent.duration.*
 
 object Env:
 
-  def loadEnv(cacheFile: FilePath)(client: Client[IO]): IO[Env] = 
-    for glist <- fetchTokenList(client)
-        reg   <- TokenRegistry(cacheFile, glist)
-    yield Env(reg)
+  val cacheDir = getXdgDirectory(Xdg.Cache) </> "cryptosis"
+  val CACHE_TOKEN_FILE = cacheDir </> "cryptosis-tokens.json"
+  val GECKO_TOKEN_FILE = cacheDir </> "coingecko-tokens.json"
+  val GECKO_PRICE_FILE = cacheDir </> "coingecko-prices.json"
 
-  private def fetchTokenList(client: Client[IO]): IO[Seq[Token]] =
+  val priceUri = uri"https://api.coingecko.com/api/v3/simple/price"
+
+  def priceOf(token: Token)(using Client[IO]): IO[Price] = 
+    tokenPrices.flatMap { prices =>
+      prices.get(token.id) match
+        case Some(p) => IO.pure(p)
+        case None    => // load price for token and update cache
+          for a <- fetchCoingeckoPrices((Seq(token)))
+              _ <- saveJsonFile(GECKO_PRICE_FILE, prices ++ a)
+              r <- IO.fromOption(a.headOption)(Exception(s"No price for $token"))
+          yield r._2
+    }
+
+  def priced(tokens: Token*)(using Client[IO]): IO[Seq[Token]] = ???
+
+  def bluechipToken(chain: Chain)(using Client[IO]): IO[Token] = ???
+
+  def findById(id: Id): IO[Token] =
+    cachedTokens.map(v => v(id))
+
+  def findBySymbol(symbol: Symbol, chain: Chain, nameHint: String = ""): IO[Token] =
+    def find(tx: List[Token]) = (tx, nameHint) match
+      case (Nil, _)               => None
+      case (h :: Nil, _)          => Some(h)
+      case (grp, n) if n.nonEmpty => CoingeckoMapper.byName(n, grp)
+      case (h :: _, _)            => Some(h) // fallback head
+     
+    for cached <- cachedTokens
+        tokens  = cached.values.filter(v => v.symbol == symbol && v.chain == chain).toList
+        result <- IO.fromOption(find(tokens))(Exception(s"Token not found: $symbol"))
+        _      <- updateCache(result, cached)
+    yield result
+
+  def findByContract(contract: Address)(using Client[IO]): IO[Token] =
+    def check(t: Option[Token]) = t match
+      case Some(v) => IO.pure(v)
+      case None => coingeckoTokens.flatMap { tx =>
+        val res = tx.find(_.contract.map(_ == contract).getOrElse(false))
+        IO.fromOption(res)(Exception(s"No such token address: $contract"))
+      }
+
+    for cached <- cachedTokens
+        mtok    = cached.values.find(_.contract.map(_ == contract).getOrElse(false))
+        result <- check(mtok)
+        _      <- updateCache(result, cached)
+    yield result
+
+  def resolveToken(token: Token)(using Client[IO]): IO[Token] =
+    for cached <- cachedTokens
+        geckos <- coingeckoTokens
+        result <- internalResolveToken(token, cached, geckos)
+    yield result
+
+  def resolveTokens(tokens: Seq[Token])(using Client[IO]): IO[Seq[Token]] =
+    for cached <- cachedTokens
+        geckos <- coingeckoTokens
+        result <- tokens.distinct.traverse(internalResolveToken(_, cached, geckos))
+    yield result
+
+  private def internalResolveToken(token: Token, cache: Map[Id, Token], geckos: Seq[Token]): IO[Token] =
+    val rs = if cache.contains(token.id)
+               then IO.pure(token)
+               else resolveFromGeckos(token, geckos)
+
+    rs.flatMap(t => updateCache(t, cache) >> IO.pure(t))
+
+  private def updateCache(t: Token, cache: Map[Id, Token]): IO[Unit] =
+    if cache.contains(t.id)
+      then IO.unit
+      else saveJsonFile(CACHE_TOKEN_FILE, cache.values.toSeq :+ t)
+
+  private def updatePrices(tx: Seq[Token], prices: Map[Id, Price]): IO[Unit] =
+    val newPrices = tx.filter(t => !prices.contains(t.id))
+    if newPrices.isEmpty
+      then IO.unit
+      else saveJsonFile(GECKO_PRICE_FILE, prices)
+
+  private def cachedTokens: IO[Map[Id, Token]] =
+    if CACHE_TOKEN_FILE.exists
+      then loadJsonFile[Seq[Token]](CACHE_TOKEN_FILE).map(_.map(t => t.id -> t).toMap)
+      else IO.pure(Map.empty[Id, Token])
+
+  private def coingeckoTokens(using Client[IO]): IO[Seq[Token]] =
+    if GECKO_TOKEN_FILE.expired(30.days)
+      then fetchCoingeckoTokens
+      else loadJsonFile[Seq[Token]](GECKO_TOKEN_FILE)
+
+  private def tokenPrices: IO[Map[Id, Price]] = 
+    if GECKO_PRICE_FILE.expired(1.hour)
+      then IO.pure(Map.empty[Id, Price])
+      else loadJsonFile[Map[Id, Price]](GECKO_PRICE_FILE)
+
+  private def fetchCoingeckoTokens(using client: Client[IO]): IO[Seq[Token]] =
     for gt <- IO.fromEither(Uri.fromString("https://api.coingecko.com/api/v3/coins/list?include_platform=true"))
         dx <- client.expect[Seq[GToken]](gt)
-    yield processGeckos(dx)
+        rx  = CoingeckoMapper.processGeckos(dx)
+        _   = GECKO_TOKEN_FILE.delete
+        _  <- saveJsonFile(GECKO_TOKEN_FILE, rx)
+    yield rx
 
-  private def processGeckos(gtokens: Seq[GToken]): Seq[Token] = 
-    val listOfLists = gtokens.map { 
-      case GToken(id@"bitcoin", sym@Symbol.Btc, name, _) =>
-        Seq(Token(id, name, sym, Chain.Bitcoin, 8, None))
-      case GToken(id@"dogecoin", sym@Symbol.Doge, name, _) =>
-        Seq(Token(id, name, sym, Chain.Dogecoin, 8, None))
-      case GToken(id@"solana", sym@Symbol.Sol, name, _) =>
-        Seq(Token(id, name, sym, Chain.Solana, 8, None))
-      case GToken(id@"elrond-erd-2", sym@Symbol.Egld, name, _) =>
-        Seq(Token(id, name, sym, Chain.Elrond, 18, None))
-      case GToken(id, sym, name, pfms) if pfms.isEmpty =>
-        Seq(Token(id, name, sym, resolveChain(id), None))
-      case GToken(id, sym, name, pfms) =>
-        pfms.map(kv => Token(id, name, sym, kv._1, kv._2))
+  private def fetchCoingeckoPrices(tokens: Seq[Token])(using client: Client[IO]): IO[Map[Id, Price]] =
+    def processPrices(tx: Seq[Token], data: Json): Decoder.Result[Seq[(Id, Price)]] =
+      val hc = data.hcursor
+      val ids = hc.keys.getOrElse(Iterable.empty).toSeq
+      val px  = ids.traverse(gi => (hc <\> gi <\> "usd").as[Option[Price]].map(gi -> _))
+
+      px.map { priceList =>
+        val lup = priceList.map(v => v._1 -> v._2.getOrElse(Price.Zero)).toMap
+        tx.map(t => t.id -> lup.get(t.geckoId).getOrElse(Price.Zero))
+      }
+
+    val tids = tokens.map(_.geckoId).mkString(",")
+
+    for url <- IO.pure(priceUri +? ("ids", tids) +? ("vs_currencies", "usd"))
+        jsn <- client.expect(url)(jsonOf[IO, Json])
+        res <- IO.fromEither(processPrices(tokens, jsn))
+    yield res.toMap
+
+  private def resolveFromGeckos(token: Token, geckos: Seq[Token]): IO[Token] =
+    val mTok = token.contract match
+      case Some(c) => CoingeckoMapper.byContract(c, geckos)
+      case None    => None
+
+    val result = mTok.getOrElse {
+      val group = geckos.filter(t => t.symbol == token.symbol && t.chain == token.chain)
+      CoingeckoMapper.bestMatched(token, group)
     }
 
-    listOfLists.flatten.filterNot(_.chain == Chain.Unknown)
-
-  private def resolveChain(id: String): Chain =
-    val chainMap = Map(
-      "bitcoin"             -> Chain.Bitcoin,
-      "ethereum"            -> Chain.Ethereum,
-      "solana"              -> Chain.Solana,
-      "elrond"              -> Chain.Elrond,
-      "binance-smart-chain" -> Chain.Binance,
-      "avalanche"           -> Chain.Avalanche,
-      "fantom"              -> Chain.Fantom,
-      "polygon-pos"         -> Chain.Polygon,
-      "polygon"             -> Chain.Polygon,
-      "matic"               -> Chain.Polygon,
-      "harmony-shard-0"     -> Chain.Harmony,
-      "dogechain"           -> Chain.Dogecoin,
-      "dogecoin"            -> Chain.Dogecoin,
-      "cardano"             -> Chain.Cardano,
-      "polkadot"            -> Chain.Polkadot
-    )
-
-    id.split('-').foldLeft(Chain.Unknown) {
-      case (acc, str) if acc != Chain.Unknown => acc
-      case (_, str) => chainMap.get(str).getOrElse(Chain.Unknown)
-    }
+    IO.pure(result)

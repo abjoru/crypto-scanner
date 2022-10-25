@@ -6,6 +6,8 @@ import cats.syntax.traverse.given
 
 import io.circe.*
 
+import org.http4s.client.Client
+
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 import com.bjoru.cryptosis.syntax.circe.*
@@ -24,85 +26,61 @@ object ZapperDecoder:
     yield Token(key, lbl, sym, net, dec, con, bal, prs)
   }
 
-  def decodeMulti(data: Seq[Json], env: Env): IO[(Env, Seq[Defi])] =
-    data.foldLeftM(env -> Seq.empty[Defi]) {
-      case ((e2, acc), j) => decodeApps(j, e2).map(v => v._1 -> (acc ++ v._2))
+  def decodeDefiApps(apps: Map[Wallet, Seq[Json]])(using Client[IO]): IO[Seq[Wallet]] = 
+    apps.toSeq.traverse {
+      case (wallet, jsons) => jsons.foldLeftM(wallet) {
+        case (acc, json) => decodeApps(json).map(acc.addBalances(_))
+      }
     }
 
-  def decodeDefiApps(env: Env, apps: Map[Wallet, Seq[Json]]): IO[(Env, Seq[Wallet])] = 
-    apps.toSeq.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((e2, acc), (w, js)) =>
-        decodeMulti(js, e2).map(v => v._1 -> (acc :+ w.addBalances(v._2)))
+  def decodeTokenApps(apps: Map[Wallet, Seq[Json]])(using Client[IO]): IO[Seq[Wallet]] =
+    apps.toSeq.traverse {
+      case (wallet, jsons) => jsons.foldLeftM(wallet) { (w, json) =>
+        for node <- (json <\> "balance" <\> "wallet").asIO[Json]
+            keys  = node.hcursor.keys.getOrElse(Iterable.empty)
+            toks <- keys.toSeq.traverse(k => (node <\> k).asIO[Token])
+            res  <- Env.resolveTokens(toks)
+        yield w.addBalances(res)
+      }
     }
 
-  def decodeTokenApps(env: Env, apps: Map[Wallet, Seq[Json]]): IO[(Env, Seq[Wallet])] =
-    apps.toSeq.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((e2, acc), (w, js)) =>
-        val updWallet = js.foldLeftM(e2 -> w) {
-          case ((e3, w2), j) =>
-            for node <- (j <\> "balance" <\> "wallet").asIO[Json]
-                keys  = node.hcursor.keys.getOrElse(Iterable.empty)
-                toks <- keys.toSeq.traverse(k => node.hcursor.downField(k).asIO[Token])
-                res   = e3.resolveAndUpdateAll(toks)
-            yield res._1 -> w2.addBalances(res._2)
-        }
-
-        updWallet.map(v => v._1 -> (acc :+ v._2))
-    }
-
-  private def decodeApps(data: Json, env: Env): IO[(Env, Seq[Defi])] = 
+  private def decodeApps(data: Json)(using Client[IO]): IO[Seq[Defi]] = 
     for addr <- (data <\> "addresses").asIO[Seq[String]].map(_.head)
         itms <- (data <\> "app" <\> "data").asIO[Option[Seq[Json]]].map(_.getOrElse(Seq.empty))
-        res  <- buildApps(env, itms)
+        res  <- itms.traverse(decodeApp)
     yield res
 
-  private def buildApps(env: Env, data: Seq[Json]): IO[(Env, Seq[Defi])] =
-    data.foldLeftM(env -> Seq.empty[Defi]) {
-      case ((e2, acc), d) => decodeApp(e2, d).map(v => v._1 -> (acc :+ v._2))
-    }
-
-  private def decodeApp(env: Env, data: Json): IO[(Env, Defi)] =
+  private def decodeApp(data: Json)(using Client[IO]): IO[Defi] =
     for key <- (data <\> "key").asIO[String]
         aid <- (data <\> "appId").asIO[String]
         chi <- (data <\> "network").asIO[Chain]
         lbl <- (data <\> "displayProps" <\> "label").asIO[String]
-        brd <- (data <\> "breakdown").asIO[Seq[Json]].flatMap(decodeAppBreakdowns(key, lbl, chi, env, _))
+        brd <- (data <\> "breakdown").asIO[Seq[Json]].flatMap(decodeAppBreakdowns(key, lbl, chi, _))
     yield brd
 
   private def decodeAppBreakdowns(
     id: String, 
     name: String, 
     chain: Chain, 
-    env: Env, 
     data: Seq[Json]
-  ): IO[(Env, Defi)] =
-    val results = data.foldLeftM(env -> Map.empty[String, Seq[Token]]) {
-      case ((e2, acc), json) => decodeAppBreakdown(e2, json).map {
-        case ((e3, (id, tx))) => e3 -> acc.updatedWith(id) {
-          case Some(xs) => Some(xs ++ tx)
-          case None     => Some(tx)
-        }
-      }
-    }
-
-    results.map {
-      case (e, items) if items.contains("claimable") => e -> Defi.Farm(
+  )(using Client[IO]): IO[Defi] =
+    data.traverse(decodeAppBreakdown).map(_.toMap).map {
+      case e if e.contains("claimable") => Defi.Farm(
         providerId = id, 
         name = name, 
         chain = chain, 
-        liquidity = items.get("supplied").getOrElse(Seq.empty),
-        claimable = items.get("claimable").getOrElse(Seq.empty)
+        liquidity = e.get("supplied").getOrElse(Seq.empty),
+        claimable = e.get("claimable").getOrElse(Seq.empty)
       )
-
-      case (e, items) => e -> Defi.Stake(
+      case e => Defi.Stake(
         providerId = id,
         name = name,
         chain = chain,
-        liquidity = items.get("supplied").getOrElse(Seq.empty)
+        liquidity = e.get("supplied").getOrElse(Seq.empty)
       )
     }
 
-  private def decodeAppBreakdown(env: Env, data: Json): IO[(Env, (String, Seq[Token]))] =
+  private def decodeAppBreakdown(data: Json)(using Client[IO]): IO[(String, Seq[Token])] =
     val ident = for a <- (data <\> "contractType").asIO[Option[String]]
                     b <- (data <\> "metaType").asIO[Option[String]]
                 yield a -> b
@@ -110,17 +88,17 @@ object ZapperDecoder:
     ident.flatMap {
       case (Some("app-token"), _) => 
         val tokens = (data <\> "breakdown").asIO[Seq[Token]]
-        val result = tokens.map(env.resolveAndUpdateAll(_))
-        result.map(v => v._1 -> ("supplied" -> v._2))
+        val result = tokens.flatMap(Env.resolveTokens(_))
+        result.map(v => ("supplied" -> v))
 
       case (Some("base-token"), Some("claimable")) =>
-        val token = data.asIO[Token].map(env.resolveAndUpdate(_))
-        token.map(v => v._1 -> ("claimable" -> Seq(v._2)))
+        val token = data.asIO[Token].flatMap(Env.resolveToken(_))
+        token.map(v => "claimable" -> Seq(v))
 
       case (Some("base-token"), _) =>
-        val token = data.asIO[Token].map(env.resolveAndUpdate(_))
-        token.map(v => v._1 -> ("supplied" -> Seq(v._2)))
+        val token = data.asIO[Token].flatMap(Env.resolveToken(_))
+        token.map(v => "supplied" -> Seq(v))
 
 
-      case _ => IO.pure(env -> ("unknown" -> Seq.empty[Token]))
+      case _ => IO.pure("unknown" -> Seq.empty[Token])
     }

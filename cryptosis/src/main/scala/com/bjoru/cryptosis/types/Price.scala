@@ -2,7 +2,7 @@ package com.bjoru.cryptosis.types
 
 import cats.Show
 
-import io.circe.Decoder
+import io.circe.*
 import pureconfig.ConfigReader
 
 import scala.util.Try
@@ -14,6 +14,8 @@ opaque type Price = BigDecimal
 object Price:
 
   given Show[Price] = Show.show(curFormat.format(_))
+
+  given Encoder[Price] = Encoder.encodeBigDecimal.contramap(_.toBD)
 
   given Decoder[Price] = Decoder.decodeBigDecimal.emap(p => Right(apply(p)))
 

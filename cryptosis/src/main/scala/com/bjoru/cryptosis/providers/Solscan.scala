@@ -16,8 +16,8 @@ import org.http4s.circe.CirceEntityDecoder.given
 
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
+import com.bjoru.cryptosis.syntax.circe.*
 
-// FIXME don't know how to get SOL balance from this???
 class Solscan(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
 
   given Decoder[Token] = Decoder.instance { hc =>
@@ -34,47 +34,42 @@ class Solscan(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
 
   val supportedChains = Seq(Chain.Solana)
 
-  protected def doSync(wallets: Seq[Wallet], env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    for a <- foreachWallet(env, wallets)(solBalance)
-        b <- foreachWallet(a._1, a._2)(balances)
-        c <- foreachWallet(b._1, b._2)(staking)
+  protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
+    for a <- wallets.traverse(solBalance)
+        b <- a.traverse(balances)
+        c <- b.traverse(balances)
     yield c
 
-  private def solBalance(env: Env, wallet: Wallet)(using client: Client[IO]): IO[(Env, Wallet)] =
+  private def solBalance(wallet: Wallet)(using client: Client[IO]): IO[Wallet] =
     for a <- IO.pure(ep.uri / "account" / wallet.address.str)
         b <- client.expect(a)(jsonOf[IO, Json])
-        c <- IO.fromEither(b.hcursor.downField("lamports").as[BigDecimal])
-        d <- IO.fromTry(env.bluechipToken(Chain.Solana))
+        c <- (b <\> "lamports").asIO[BigDecimal]
+        d <- Env.bluechipToken(Chain.Solana)
         e  = d.withBalance(d.decimals, Balance.fromBigDecimal(c / LAMPORTS_PR_SOL))
-    yield env -> wallet.addBalance(e)
+    yield wallet.addBalance(e)
 
-  private def balances(env: Env, wallet: Wallet)(using client: Client[IO]): IO[(Env, Wallet)] = 
+  private def balances(wallet: Wallet)(using client: Client[IO]): IO[Wallet] = 
     for a <- IO.pure(ep.uri / "account" / "tokens" +? ("account" -> wallet.address.str))
         b <- client.expect(a)(jsonOf[IO, Seq[Json]])
-        c <- IO.fromEither(b.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)))
+        c <- b.traverse(j => (j <\> "tokenSymbol").asIO[Option[Symbol]].map(j -> _))
         d <- IO.fromEither(c.filter(_._2.isDefined).traverse(_._1.as[Token]))
-        e  = d.foldLeft(env -> Seq.empty[Token])(resolve)
-    yield e._1 -> wallet.addBalances(e._2)
+        e <- Env.resolveTokens(d)
+    yield wallet.addBalances(e)
 
-  private def staking(env: Env, wallet: Wallet)(using client: Client[IO]): IO[(Env, Wallet)] =
+  private def staking(wallet: Wallet)(using client: Client[IO]): IO[Wallet] =
     for a <- IO.pure(ep.uri / "account" / "stakeAccounts" +? ("account" -> wallet.address.str))
         b <- client.expect(a)(jsonOf[IO, Json])
         c  = b.hcursor.keys.map(_.head)
-        d <- parseStake(c, b, env)
-    yield d._1 -> d._2.map(wallet.addBalance(_)).getOrElse(wallet)
+        d <- parseStake(c, b)
+    yield d.map(wallet.addBalance(_)).getOrElse(wallet)
 
-  private def resolve(acc: (Env, Seq[Token]), t: Token): (Env, Seq[Token]) = 
-    acc._1.resolveToken(t) match
-      case Some(t2) => acc._1.updateToken(t2) -> (acc._2 :+ t2)
-      case None     => acc._1.updateToken(t)  -> (acc._2 :+ t)
-
-  private def parseStake(key: Option[String], json: Json, env: Env): IO[(Env, Option[Defi.Stake])] =
+  private def parseStake(key: Option[String], json: Json)(using Client[IO]): IO[Option[Defi.Stake]] =
     key match
       case Some(k) =>
-        for a <- IO.fromEither(json.hcursor.downField(k).as[Json])
-            b <- IO.fromEither(a.hcursor.downField("amount").as[String])
-            c <- IO.fromTry(env.bluechipToken(Chain.Solana))
+        for a <- (json <\> k).asIO[Json]
+            b <- (a <\> "amount").asIO[String]
+            c <- Env.bluechipToken(Chain.Solana)
             d  = c.withBalance(c.decimals, Balance.fromBigDecimal(BigDecimal(b) / LAMPORTS_PR_SOL))
-        yield env -> Some(Defi.Stake("solscan-sol-staking", "Sol Staking", Chain.Solana, Seq(d)))
+        yield Some(Defi.Stake("solscan-sol-staking", "Sol Staking", Chain.Solana, Seq(d)))
       case None =>
-        IO.pure(env -> None)
+        IO.pure(None)
