@@ -44,9 +44,7 @@ enum Token:
 object Token:
 
   given Identity[Token] with
-    extension (t: Token) def id = (t.symbol, t.chain, t.contract) match
-      case (s, c, Some(a)) => Id.create(s.lower, c, a)
-      case (s, c, None)    => Id.create(s.lower, c)
+    extension (t: Token) def id = mkId(t.symbol, t.chain)
 
   given Show[Token] = Show.show {
     case v: Base     => s"${v.chain} ${v.symbol.show}"
@@ -165,3 +163,6 @@ object Token:
 
   def fromExchange(symbol: Symbol, chain: Chain, balance: Balance): Token =
     Balanced(symbol.lower, symbol.cap, symbol, chain, None, 18, balance)
+
+  def mkId(symbol: Symbol, chain: Chain): Id = 
+    Id.create(symbol, chain)

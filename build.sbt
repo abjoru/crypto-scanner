@@ -27,8 +27,12 @@ lazy val core = (project in file("core"))
       "org.typelevel"         %% "cats-core"       % catsVersion,
       "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
       "io.circe"              %% "circe-core"      % circeVersion,
+      "io.circe"              %% "circe-parser"      % circeVersion,
       "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
       "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
+      "org.http4s"            %% "http4s-core"     % http4sVersion,
+      "org.http4s"            %% "http4s-ember-client" % http4sVersion,
+      "org.http4s"            %% "http4s-circe"        % http4sVersion,
     )
   )
 
@@ -36,6 +40,7 @@ lazy val tokens = (project in file("tokens"))
   .settings(name := "cryptosis-tokens")
 
 lazy val pricing = (project in file("pricing"))
+  .dependsOn(core)
   .settings(name := "cryptosis-pricing")
 
 lazy val providers = (project in file("providers"))

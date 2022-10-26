@@ -1,19 +1,30 @@
 package com.bjoru.cryptosis
 
+import cats.data.StateT
 import cats.effect.IO
 
-import io.circe.{HCursor, DecodingFailure as DF}
+import io.circe.{Decoder, Encoder, HCursor, DecodingFailure as DF}
 import io.circe.Decoder.Result
+import io.circe.parser.parse
+import io.circe.syntax.*
 
+import pureconfig.ConfigReader
+import pureconfig.error.ConfigReaderException
+
+import com.bjoru.cryptosis.config.YamlConfigSource
 import com.bjoru.cryptosis.syntax.*
 
+import scala.io.Source
 import scala.concurrent.duration.*
 import scala.util.Try
+import scala.reflect.ClassTag
 
-import java.io.File
+import java.io.{File, BufferedWriter, FileWriter}
 import java.nio.file.{Path, Paths}
 
 type FilePath = Path
+
+type SIO[T] = StateT[IO, Env, T]
 
 enum Xdg:
   case Data
@@ -33,6 +44,24 @@ def cryptosisDirectory(xdg: Xdg): FilePath =
   getXdgDirectory(xdg) </> "cryptosis"
 
 def putStrLn(str: String): IO[Unit] = IO(println(str))
+
+def loadYaml[T: ClassTag](file: FilePath)(using ConfigReader[T]): IO[T] =
+  for src <- IO.pure(YamlConfigSource.file(file))
+      res <- IO.fromEither(src.load[T].left.map(ConfigReaderException(_)))
+  yield res
+
+def loadJson[T](file: FilePath)(using Decoder[T]): IO[T] =
+  for src  <- IO(Source.fromFile(file.toFile).getLines.mkString("\n"))
+      json <- IO.fromEither(parse(src))
+      res  <- IO.fromEither(json.as[T])
+  yield res
+
+def saveJson[T](file: FilePath, data: T)(using Encoder[T]): IO[Unit] =
+  for dir <- file.mkdirs
+      bwr  = BufferedWriter(FileWriter(file.toFile))
+      _   <- IO(bwr.write(data.asJson.spaces2))
+      _   <- IO(bwr.close)
+  yield ()
 
 ////////////////
 // Extensions //
