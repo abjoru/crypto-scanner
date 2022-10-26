@@ -20,7 +20,10 @@ class BlockCypher(ep: Endpoint) extends ProviderApi:
   val supportedChains = Seq(Chain.Bitcoin, Chain.Dogecoin)
 
   protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
-    wallets.traverse(walletBalance)
+    for _ <- putStrLn("blockcypher: starting wallet sync..")
+        r <- wallets.traverse(walletBalance)
+        _ <- putStrLn("blockcypher: finished wallet sync.")
+    yield r
 
   private def walletBalance(wallet: Wallet)(using client: Client[IO]): IO[Wallet] =
     for a <- IO.pure(ep.uri / wallet.chain.symbol.lower / "main" / "addrs" / wallet.address.str)

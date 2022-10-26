@@ -41,10 +41,15 @@ class CovalentHQ(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
   )
 
   protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
-    wallets.traverse {
+    val io = wallets.traverse {
       case w if w.isMultichain => multichain(w)
       case w                   => balance(w)
     }
+
+    for _ <- putStrLn("covalenthq: staring wallet sync..")
+        r <- io
+        _ <- putStrLn("covalenthq: finished wallet sync.")
+    yield r
 
   private def chainId(chain: Chain) = chain match
     case Chain.Ethereum  => Right("1")

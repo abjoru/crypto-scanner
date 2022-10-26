@@ -33,8 +33,10 @@ class Elrond(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
   val supportedChains = Seq(Chain.Elrond)
 
   protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
-    for a <- wallets.traverse(balances)
+    for _ <- putStrLn("elrond: starting wallet sync..")
+        a <- wallets.traverse(balances)
         b <- a.traverse(egld)
+        _ <- putStrLn("elrond: finished wallet sync.")
     yield b
 
   def egld(wallet: Wallet)(using cl: Client[IO]): IO[Wallet] =

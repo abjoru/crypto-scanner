@@ -35,9 +35,11 @@ class Solscan(ep: Endpoint, filters: Seq[TokenFilter]) extends ProviderApi:
   val supportedChains = Seq(Chain.Solana)
 
   protected def doSync(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[Wallet]] =
-    for a <- wallets.traverse(solBalance)
+    for _ <- putStrLn("solscan: starting wallet sync...")
+        a <- wallets.traverse(solBalance)
         b <- a.traverse(balances)
         c <- b.traverse(balances)
+        _ <- putStrLn("solscan: finished wallet sync.")
     yield c
 
   private def solBalance(wallet: Wallet)(using client: Client[IO]): IO[Wallet] =

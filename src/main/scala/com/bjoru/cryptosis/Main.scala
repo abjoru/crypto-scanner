@@ -1,13 +1,11 @@
-package com.bjoru.cscanner
+package com.bjoru.cryptosis
 
 import cats.Foldable
 import cats.effect.*
 import cats.implicits.given
 
-import org.http4s.client.*
 import org.http4s.ember.client.*
 
-import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
 import scala.concurrent.duration.*
@@ -34,35 +32,18 @@ object Main extends IOApp:
         _        <- putStrLn("---------------------------------------------------------")
         _        <- printBalances(balances)
         _        <- putStrLn("---------------------------------------------------------")
+        _        <- printTotals(wallets)
     yield ()
 
   def printBalances(items: Seq[Token | Defi]): IO[Unit] = IO {
     items.foreach {
       case t: Token => println(t.show)
-      case d: Defi  => println(d.show)
+      case d: Defi  => println(s">>> ${d.show}")
     }
   }
 
-    /*
-  def syncWallets(wallets: Seq[Wallet], apis: Seq[CryptoApi])(client: Client[IO]): IO[Seq[Wallet]] =
-    Foldable[Seq].foldM(apis, wallets) {
-      case (wx, api) => api.syncWallets(wx)(client)
-    }
-
-  def checkPrices(wallets: Seq[Wallet], client: Client[IO]): IO[Seq[Wallet]] =
-    val tokens = wallets.foldLeft(Seq.empty[Token])(_ ++ _.unpricedTokens).distinct
-
-    if tokens.isEmpty then IO.pure(wallets) else 
-      GeckoPriceApi(cfgDir).pricer(tokens)(client).map { pricer =>
-        wallets.map(_.update(pricer.price))
-      }
-
-  def printPrices(wallets: Seq[Wallet]): IO[Seq[String]] = IO {
-    for w <- wallets
-        t <- w.tokensNoEmpty
-        a  = t.contract.map(_.toString).getOrElse("")
-        b  = t.balance.map(_.show).getOrElse("0")
-        s  = s"${w.chain} ($a) $b ${t.symbol} ${t.valueUsd.show}"
-    yield s //++ " $" ++ t.valueUsd.show
+  def printTotals(wallets: Seq[Wallet]): IO[Unit] = IO {
+    val values = wallets.traverse(_.valueUsd)
+    val totals = values.map(_.reduce(_ + _)).getOrElse(Price.Zero)
+    println(s"Totals: ${totals.show}")
   }
-  */

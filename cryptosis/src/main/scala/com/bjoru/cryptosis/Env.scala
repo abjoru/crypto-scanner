@@ -37,7 +37,6 @@ object Env:
         case Some(p) => IO.pure(p)
         case None    => // load price for token and update cache
           for a <- fetchCoingeckoPrices((Seq(token)))
-              _ <- saveJsonFile(GECKO_PRICE_FILE, prices ++ a)
               r <- IO.fromOption(a.headOption)(Exception(s"No price for $token"))
           yield r._2
     }
@@ -46,9 +45,7 @@ object Env:
     for priced  <- tokenPrices
         missing  = tokens.filterNot(t => priced.contains(t.id))
         fetched <- fetchCoingeckoPrices(missing)
-        index    = priced ++ fetched
-        _       <- saveJsonFile(GECKO_PRICE_FILE, index)
-    yield tokens.map(t => index.get(t.id).map(t.withPrice(_)).getOrElse(t))
+    yield tokens.map(t => fetched.get(t.id).map(t.withPrice(_)).getOrElse(t))
 
   def bluechipToken(chain: Chain)(using Client[IO]): IO[Token] =
     CoingeckoMapper.bluechipSymbolTable.get(chain.symbol) match
@@ -110,13 +107,16 @@ object Env:
   def resolveToken(token: Token)(using Client[IO]): IO[Token] =
     for cached <- cachedTokens
         geckos <- coingeckoTokens
-        result <- internalResolveToken(token, cached, geckos)
+        result <- internalResolveToken(token, cached, geckos).handleError(_ => token)
     yield result
 
   def resolveTokens(tokens: Seq[Token])(using Client[IO]): IO[Seq[Token]] =
     for cached <- cachedTokens
         geckos <- coingeckoTokens
-        result <- tokens.distinct.traverse(internalResolveToken(_, cached, geckos))
+        result <- tokens.distinct.traverse { t =>
+          val io = internalResolveToken(t, cached, geckos)
+          io.handleError(_ => t)
+        }
     yield result
 
   private def internalResolveToken(token: Token, cache: Map[Id, Token], geckos: Seq[Token]): IO[Token] =
@@ -178,12 +178,20 @@ object Env:
         tx.map(t => t.id -> lup.get(t.geckoId).getOrElse(Price.Zero))
       }
 
-    val tids = tokens.map(_.geckoId).mkString(",")
+    tokenPrices.flatMap { cache =>
+      val (missing, priced) = tokens.partition(_.missingPrice)
+      val uncached = missing.filterNot(t => cache.contains(t.id))
 
-    for url <- IO.pure(priceUri +? ("ids", tids) +? ("vs_currencies", "usd"))
-        jsn <- client.expect(url)(jsonOf[IO, Json])
-        res <- IO.fromEither(processPrices(tokens, jsn))
-    yield res.toMap
+      if uncached.isEmpty
+        then IO.pure(cache)
+        else
+          for a <- IO.pure(uncached.map(_.geckoId).mkString(","))
+              u <- IO.pure(priceUri +? ("ids", a) +? ("vs_currencies", "usd"))
+              j <- client.expect(u)(jsonOf[IO, Json])
+              r <- IO.fromEither(processPrices(uncached, j).map(_.toMap))
+              _ <- saveJsonFile(GECKO_PRICE_FILE, cache ++ r)
+          yield r
+    }
 
   private def resolveFromGeckos(token: Token, geckos: Seq[Token]): IO[Token] =
     val mTok = token.contract match

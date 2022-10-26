@@ -42,7 +42,7 @@ class Zapper(ep: Endpoint) extends ProviderApi:
 
   protected def doSync(wallets: Seq[Wallet])(using client: Client[IO]): IO[Seq[Wallet]] =
     for u  <- IO.pure(zapperUri(wallets))
-        _  <- putStrLn("zapper: making call...")
+        _  <- putStrLn("zapper: starting wallet sync...")
         s  <- client.expect[String](GET(u, Auth))(using EntityDecoder.text[IO])
         _  <- putStrLn("zapper: received response, parsing result...")
         l   = Source.fromString(s).getLines.filter(Zapper.LineFilter).toList
@@ -53,6 +53,7 @@ class Zapper(ep: Endpoint) extends ProviderApi:
 
         r1 <- ZapperDecoder.decodeDefiApps(da)
         r2 <- ZapperDecoder.decodeTokenApps(ta)
+        _  <- putStrLn("zapper: finished wallet sync.")
     yield Wallet.mergeWallets(r1, r2)
 
   def indexMap(data: Seq[Json]): IO[Map[(String, Chain, Address), Json]] =

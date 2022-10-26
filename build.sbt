@@ -20,9 +20,33 @@ lazy val munitVersion = "0.7.29"
 // Modules //
 /////////////
 
+lazy val core = (project in file("core"))
+  .settings(
+    name := "cryptosis-core",
+    libraryDependencies ++= Seq(
+      "org.typelevel"         %% "cats-core"       % catsVersion,
+      "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
+      "io.circe"              %% "circe-core"      % circeVersion,
+      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
+      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
+    )
+  )
+
+lazy val tokens = (project in file("tokens"))
+  .settings(name := "cryptosis-tokens")
+
+lazy val pricing = (project in file("pricing"))
+  .settings(name := "cryptosis-pricing")
+
+lazy val providers = (project in file("providers"))
+  .settings(name := "cryptosis-providers")
+
+lazy val exchanges = (project in file("exchanges"))
+  .settings(name := "cryptosis-exchanges")
+
 lazy val cryptosis = (project in file("cryptosis"))
   .settings(
-    name := "cryptosis",
+    name := "cryptosis-core",
     libraryDependencies ++= Seq(
       "org.typelevel"         %% "cats-core"       % catsVersion,
       "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
@@ -52,9 +76,4 @@ lazy val testKit = (project in file("testKit"))
 
 lazy val root = (project in file("."))
   .dependsOn(cryptosis)
-  .settings(
-    name := "cryptosis",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % catsEffectVersion
-    )
-  )
+  .settings(name := "cryptosis")
