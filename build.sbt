@@ -81,5 +81,5 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(cryptosis)
+  .dependsOn(core, oracles, providers, exchanges)
   .settings(name := "cryptosis")

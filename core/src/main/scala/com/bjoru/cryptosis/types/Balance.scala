@@ -19,6 +19,7 @@ object Balance:
   given Conversion[Balance, BigDecimal] = v => v
 
   extension (b: Balance)
+    def +(other: BigDecimal): Balance = b + other
     def isEmpty: Boolean = b == Zero
 
   private lazy val numberF = NumberFormat.getNumberInstance

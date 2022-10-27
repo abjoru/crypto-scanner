@@ -77,3 +77,8 @@ object Defi:
       case v: Stake => v.chain
       case v: Farm  => v.chain
       case v: Pool  => v.chain
+
+    def tokens: Seq[Token] = d match
+      case v: Stake => v.liquidity
+      case v: Farm  => (v.liquidity ++ v.claimable).distinct
+      case v: Pool  => (v.liquidity :+ v.poolToken).distinct

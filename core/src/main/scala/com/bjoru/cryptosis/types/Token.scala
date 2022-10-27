@@ -52,8 +52,17 @@ object Token:
 
   extension (t: Token)
 
+    def withName(name: String): Token =
+      t.copy(name = name)
+
+    def withSymbol(symbol: Symbol): Token =
+      t.copy(symbol = symbol)
+
     def withBalance(balance: Balance): Token =
       t.copy(balance = balance)
+
+    def addBalance(balance: Balance): Token =
+      t.copy(balance = t.balance + balance)
 
     def basedOn(token: Token): Token = token.copy(
       geckoId  = t.geckoId,

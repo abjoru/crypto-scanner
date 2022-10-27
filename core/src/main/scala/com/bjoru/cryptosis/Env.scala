@@ -2,6 +2,8 @@ package com.bjoru.cryptosis
 
 import cats.effect.IO
 
+import org.http4s.client.Client
+
 import com.bjoru.cryptosis.types.*
 
 import scala.util.Try
@@ -9,15 +11,6 @@ import scala.util.Try
 trait Env:
 
   val priceApi: PricingApi
-
-  /** Price any tokens that does not yet have price data.
-    * This function will resolve all prices for registered
-    * tokens and apply them to the wallets. 
-    *
-    * @param wallets list of wallets to update.
-    * @return updated env and wallet list.
-    */
-  def price(wallets: Seq[Wallet]): IO[Result[Seq[Wallet]]]
 
   /** Register items allows the system to resolve token data
     * from oracle (coingecko as of now) such that we can later
@@ -33,7 +26,7 @@ trait Env:
     * @param items tokens or defi items to register.
     * @return updated env and item list.
     */
-  def register(items: (Token | Defi)*): IO[Result[Seq[Token | Defi]]]
+  def register(items: (Token | Defi)*)(using Client[IO]): IO[Result[Seq[Token | Defi]]]
 
   /** Get bluechip token (gas/network token) for a given chain.
     * Bluechip tokens should always be registered, so this 
@@ -42,7 +35,7 @@ trait Env:
     * @param chain target chain.
     * @return Token bluechip token.
     */
-  def bluechip(chain: Chain): Token
+  def bluechip(chain: Chain)(using Client[IO]): IO[Token]
 
   /** Query the underlying oracle for tokens given by token
     * symbol and chain. Due to the registration facility,
@@ -53,7 +46,9 @@ trait Env:
     * @param chain token chain.
     * @return maybe token.
     */
-  def token(symbol: Symbol, chain: Chain): Option[Token]
+  def token(symbol: Symbol, chain: Chain)(using Client[IO]): IO[Option[Token]]
+
+  def syncPrices(using Client[IO]): IO[Env]
 
   /** Create a copy (mutation) of this environment. 
     *

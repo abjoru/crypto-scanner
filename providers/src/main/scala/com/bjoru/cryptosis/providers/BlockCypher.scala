@@ -14,9 +14,9 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
-class BlockCypher(ep: Endpoint) extends ProviderApi:
+class BlockCypher(ep: Endpoint) extends ProviderApi("blockcypher"):
 
-  def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
+  protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
     wallets.traverse(balanceOf).map(BlockChainResponse(_))
 
   def balanceOf(wallet: Wallet)(using client: Client[IO]): IO[SyncData] =
@@ -26,13 +26,17 @@ class BlockCypher(ep: Endpoint) extends ProviderApi:
 
 class BlockChainResponse(val data: Seq[SyncData]) extends SyncResponse:
 
-  def syncWallets(wallets: Seq[Wallet]): SIO[Seq[Wallet]] = 
-    SIO.inspectF(env => wallets.traverse(parseSyncData(env)))
+  def syncWallets(wallets: Seq[Wallet])(env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] = 
+    val result = wallets.traverse(parseSyncData(env))
+    result.map(env -> _)
 
-  private def parseSyncData(env: Env)(wallet: Wallet): IO[Wallet] =
+  def withData(extras: Seq[SyncData]): SyncResponse = 
+    BlockChainResponse(data ++ extras)
+
+  private def parseSyncData(env: Env)(wallet: Wallet)(using Client[IO]): IO[Wallet] =
     data.find(_.walletAddress == wallet.address) match
       case Some(SyncData(_, Seq(json))) =>
-        for token <- IO.pure(env.bluechip(wallet.chain))
+        for token <- env.bluechip(wallet.chain)
             res   <- IO.fromEither(json.hcursor.downField("balance").as[BigInt])
             bal   <- IO.fromTry(Balance.convert(token.decimals, res))
         yield wallet.addBalances(token.withBalance(bal))

@@ -2,6 +2,8 @@ package com.bjoru.cryptosis
 
 import cats.effect.IO
 
+import org.http4s.client.Client
+
 import com.bjoru.cryptosis.types.*
 
 trait TokenApi:
@@ -16,9 +18,11 @@ trait TokenApi:
     * The TokenApi should always load caches during bootstrap
     * procedures.
     */
-  def resolve(tokens: Token*): IO[Seq[Token]]
+  def resolve(tokens: Token*)(using Client[IO]): IO[Seq[Token]]
 
-  def lookup(id: Id): IO[Option[Token]]
+  def lookup(id: Id)(using Client[IO]): IO[Option[Token]]
 
-  def lookup(symbol: Symbol, chain: Chain): IO[Option[Token]] =
+  def lookup(symbol: Symbol, chain: Chain)(using Client[IO]): IO[Option[Token]] =
     lookup(Token.mkId(symbol, chain))
+
+  def bluechip(chain: Chain)(using Client[IO]): IO[Token]
