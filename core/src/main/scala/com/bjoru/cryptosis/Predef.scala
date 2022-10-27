@@ -1,5 +1,6 @@
 package com.bjoru.cryptosis
 
+import cats.Monoid
 import cats.data.StateT
 import cats.effect.IO
 
@@ -25,6 +26,20 @@ import java.nio.file.{Path, Paths}
 type FilePath = Path
 
 type SIO[T] = StateT[IO, Env, T]
+
+object SIO:
+
+  def apply[T](f: Env => IO[(Env, T)]): SIO[T] = StateT.apply(f)
+  def applyF[T](runF: IO[Env => IO[(Env, T)]]): SIO[T] = StateT.applyF(runF)
+  def get: SIO[Env] = StateT.get
+  def inspect[T](f: Env => T): SIO[T] = StateT.inspect(f)
+  def inspectF[T](f: Env => IO[T]): SIO[T] = StateT.inspectF(f)
+  def liftF[T](io: IO[T]): SIO[T] = StateT.liftF(io)
+  def modify(f: Env => Env): SIO[Unit] = StateT.modify(f)
+  def modifyF(f: Env => IO[Env]): SIO[Unit] = StateT.modifyF(f)
+  def pure[T](v: T): SIO[T] = StateT.pure(v)
+  def set(e: Env): SIO[Unit] = StateT.set(e)
+  def setF(ioe: IO[Env]): SIO[Unit] = StateT.setF(ioe)
 
 enum Xdg:
   case Data

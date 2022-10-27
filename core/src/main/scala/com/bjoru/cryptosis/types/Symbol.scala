@@ -4,6 +4,8 @@ import cats.Show
 
 import io.circe.*
 
+import org.http4s.Uri.Path.SegmentEncoder
+
 opaque type Symbol = String
 
 object Symbol:
@@ -13,6 +15,8 @@ object Symbol:
   given Encoder[Symbol] = Encoder.encodeString
 
   given Decoder[Symbol] = Decoder.decodeString
+
+  given SegmentEncoder[Symbol] = SegmentEncoder.stringSegmentEncoder
 
   given Conversion[Symbol, String] = v => v
 

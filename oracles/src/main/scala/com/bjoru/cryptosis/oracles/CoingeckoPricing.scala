@@ -1,4 +1,4 @@
-package com.bjoru.cryptosis.pricing
+package com.bjoru.cryptosis.oracles
 
 import cats.effect.IO
 import cats.syntax.traverse.given
@@ -17,14 +17,15 @@ final case class TokenPrice(
   price: Option[Price]
 )
 
-class CoingeckoPricing(cache: Map[Id, TokenPrice]) extends Pricing:
+class CoingeckoPricing(cache: Map[Id, TokenPrice]) extends PricingApi:
 
   val geckoUri = uri"https://api.coingecko.com/api/v3/simple/price"
 
   def priceOf(token: Token): Price = 
     cache.get(token.id).flatMap(_.price).getOrElse(Price.Zero)
 
-  def valueOf(token: Token): Price = ???
+  def valueOf(token: Token): Price = 
+    priceOf(token) * token.balance
 
   def valueOf(app: Defi): Price = app match
     case Defi.Stake(_, _, _, l)   => l.map(valueOf).sum
@@ -47,7 +48,7 @@ class CoingeckoPricing(cache: Map[Id, TokenPrice]) extends Pricing:
 
     priceList.sum
 
-  def register(tokens: Token*): Pricing = 
+  def register(tokens: Token*): PricingApi = 
     val newCache = tokens.foldLeft(cache) {
       case (acc, t) => acc.updatedWith(t.id) {
         case Some(_) => None
@@ -57,26 +58,29 @@ class CoingeckoPricing(cache: Map[Id, TokenPrice]) extends Pricing:
 
     CoingeckoPricing(newCache)
 
-  def registerPrices(tokens: (Token, Price)*): Pricing =
+  def registerPrices(tokens: (Token, Price)*): PricingApi =
     val newCache = tokens.foldLeft(cache) {
       case (acc, (t, p)) => acc.updated(t.id, TokenPrice(t, Some(p)))
     }
 
     CoingeckoPricing(newCache)
 
-  def syncPrices(using Client[IO]): IO[Pricing] =
+  def syncPrices(using Client[IO]): IO[PricingApi] =
     for cand <- IO.pure(cache.filter(_._2.price.isEmpty).map(_._2.token.geckoId))
         res  <- if cand.nonEmpty then syncCandidates(cand.toSeq) else IO.pure(this)
     yield res
 
-  private def syncCandidates(gids: Seq[String])(using client: Client[IO]): IO[Pricing] =
+  private def extractPrices(keys: Seq[String], json: Json) = 
+    keys.traverse(g => json.hcursor.downField(g).downField("usd").as[Option[Price]].map(g -> _))
+
+  private def syncCandidates(gids: Seq[String])(using client: Client[IO]): IO[PricingApi] =
     for url <- IO.pure(geckoUri +? ("ids", gids.mkString(",")) +? ("vs_currencies", "usd"))
         jsn <- client.expect[Json](url)
         ids <- IO.pure(jsn.hcursor.keys.getOrElse(Iterable.empty).toSeq)
-        gpr <- IO.fromEither(ids.traverse(g => jsn.hcursor.downField(g).downField("usd").as[Option[Price]].map(g -> _)))
+        gpr <- IO.fromEither(extractPrices(ids.toSeq, jsn))
     yield updateWith(gpr)
 
-  private def updateWith(prices: Seq[(String, Option[Price])]): Pricing =
+  private def updateWith(prices: Seq[(String, Option[Price])]): PricingApi =
     val newCache = prices.foldLeft(cache) {
       case (acc, (gid, Some(price))) =>
         val maybeTokenP = acc.find(_._2.token.geckoId == gid)

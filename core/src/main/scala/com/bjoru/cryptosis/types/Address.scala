@@ -7,6 +7,8 @@ import io.circe.*
 import pureconfig.ConfigReader
 import pureconfig.error.ExceptionThrown
 
+import org.http4s.Uri.Path.SegmentEncoder
+
 import scala.util.{Try, Success, Failure}
 
 opaque type Address = String
@@ -18,6 +20,8 @@ object Address:
   given Encoder[Address] = Encoder.encodeString
 
   given Decoder[Address] = Decoder.decodeString
+
+  given SegmentEncoder[Address] = SegmentEncoder.stringSegmentEncoder
 
   given ConfigReader[Address] = ConfigReader.stringConfigReader
 

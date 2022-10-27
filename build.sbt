@@ -24,47 +24,48 @@ lazy val core = (project in file("core"))
   .settings(
     name := "cryptosis-core",
     libraryDependencies ++= Seq(
-      "org.typelevel"         %% "cats-core"       % catsVersion,
-      "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
-      "io.circe"              %% "circe-core"      % circeVersion,
-      "io.circe"              %% "circe-parser"      % circeVersion,
-      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
-      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
-      "org.http4s"            %% "http4s-core"     % http4sVersion,
+      "org.typelevel"         %% "cats-core"           % catsVersion,
+      "org.typelevel"         %% "cats-effect"         % catsEffectVersion,
+      "io.circe"              %% "circe-core"          % circeVersion,
+      "io.circe"              %% "circe-parser"        % circeVersion,
+      "com.github.pureconfig" %% "pureconfig-core"     % pureConfigVersion,
+      "org.yaml"               % "snakeyaml"           % snakeyamlVersion,
+      "org.http4s"            %% "http4s-core"         % http4sVersion,
       "org.http4s"            %% "http4s-ember-client" % http4sVersion,
-      "org.http4s"            %% "http4s-circe"        % http4sVersion,
+      "org.http4s"            %% "http4s-circe"        % http4sVersion
     )
   )
 
-lazy val tokens = (project in file("tokens"))
-  .settings(name := "cryptosis-tokens")
-
-lazy val pricing = (project in file("pricing"))
+lazy val oracles = (project in file("oracles"))
   .dependsOn(core)
-  .settings(name := "cryptosis-pricing")
+  .settings(name := "cryptosis-oracles")
 
 lazy val providers = (project in file("providers"))
+  .dependsOn(core)
   .settings(name := "cryptosis-providers")
 
 lazy val exchanges = (project in file("exchanges"))
+  .dependsOn(core)
   .settings(name := "cryptosis-exchanges")
 
 lazy val cryptosis = (project in file("cryptosis"))
   .settings(
     name := "cryptosis-core",
     libraryDependencies ++= Seq(
-      "org.typelevel"         %% "cats-core"       % catsVersion,
-      "org.typelevel"         %% "cats-effect"     % catsEffectVersion,
-      "io.circe"              %% "circe-core"      % circeVersion,
-      "io.circe"              %% "circe-parser"      % circeVersion,
-      "io.circe"              %% "circe-generic"   % circeVersion,
-      "org.http4s"            %% "http4s-core"     % http4sVersion,
-      "org.http4s"            %% "http4s-ember-client" % http4sVersion,
-      "org.http4s"            %% "http4s-circe"        % http4sVersion,
-      "org.http4s"            %% "http4s-dsl"          % http4sVersion,
-      "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion,
-      "org.yaml"               % "snakeyaml"       % snakeyamlVersion,
-      ("com.github.vickumar1981" %% "stringdistance" % stringdistVersion).cross(CrossVersion.for3Use2_13)
+      "org.typelevel"            %% "cats-core"           % catsVersion,
+      "org.typelevel"            %% "cats-effect"         % catsEffectVersion,
+      "io.circe"                 %% "circe-core"          % circeVersion,
+      "io.circe"                 %% "circe-parser"        % circeVersion,
+      "io.circe"                 %% "circe-generic"       % circeVersion,
+      "org.http4s"               %% "http4s-core"         % http4sVersion,
+      "org.http4s"               %% "http4s-ember-client" % http4sVersion,
+      "org.http4s"               %% "http4s-circe"        % http4sVersion,
+      "org.http4s"               %% "http4s-dsl"          % http4sVersion,
+      "com.github.pureconfig"    %% "pureconfig-core"     % pureConfigVersion,
+      "org.yaml"                  % "snakeyaml"           % snakeyamlVersion,
+      ("com.github.vickumar1981" %% "stringdistance"      % stringdistVersion).cross(
+        CrossVersion.for3Use2_13
+      )
     )
   )
 
@@ -73,9 +74,9 @@ lazy val testKit = (project in file("testKit"))
   .settings(
     name := "cryptosis-testkit",
     libraryDependencies ++= Seq(
-      "org.scalameta" %% "munit"            % munitVersion % Test,
-      "org.scalameta" %% "munit-scalacheck" % munitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
+      "org.scalameta" %% "munit"               % munitVersion % Test,
+      "org.scalameta" %% "munit-scalacheck"    % munitVersion % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7"      % Test
     )
   )
 

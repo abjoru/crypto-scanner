@@ -1,4 +1,4 @@
-package com.bjoru.cryptosis.pricing
+package com.bjoru.cryptosis
 
 import cats.effect.IO
 
@@ -6,7 +6,7 @@ import org.http4s.client.Client
 
 import com.bjoru.cryptosis.types.*
 
-trait Pricing:
+trait PricingApi:
 
   def priceOf(token: Token): Price
 
@@ -18,8 +18,8 @@ trait Pricing:
 
   def valueOf(exchange: Exchange): Price
 
-  def register(tokens: Token*): Pricing
+  def register(tokens: Token*): PricingApi
 
-  def registerPrices(tokens: (Token, Price)*): Pricing
+  def registerPrices(tokens: (Token, Price)*): PricingApi
 
-  def syncPrices(using Client[IO]): IO[Pricing]
+  def syncPrices(using Client[IO]): IO[PricingApi]

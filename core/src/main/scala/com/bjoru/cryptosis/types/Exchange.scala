@@ -18,17 +18,6 @@ object Exchange:
       case (acc, d: Defi)  => acc.copy(balances = acc.balances.updated(d.id, d))
     }
 
-    def valueUsd: Try[Price] = 
-      val values = e.balances.toSeq.traverse {
-        case (_, t: Token) => t.valueUsd
-        case (_, d: Defi)  => d.valueUsd
-      }
-
-      values.map {
-        case xs if xs.isEmpty => Price.Zero
-        case xs               => xs.reduce(_ + _)
-      }
-
   def apply(name: String, tokens: Seq[Token], defi: Seq[Defi]): Exchange =
     val tokenMap = tokens.map(v => v.id -> v).toMap
     val defiMap  = defi.map(v => v.id -> v).toMap

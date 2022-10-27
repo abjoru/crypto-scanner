@@ -51,18 +51,14 @@ object Defi:
   given Show[Defi] = Show.show {
     case v: Stake =>
       val lname = v.liquidity.map(_.symbol.show).mkString("/")
-      val lvalue = v.liquidity.traverse(_.valueUsd).map(_.reduce(_ + _)).getOrElse(Price.Zero)
-      s"${v.chain} $lname ${lvalue.show} (Stake)"
+      s"${v.chain} $lname (Stake)"
     case v: Farm =>
       val lname = v.liquidity.map(_.symbol.show).mkString("/")
-      val lvalue = v.liquidity.traverse(_.valueUsd).map(_.reduce(_ + _)).getOrElse(Price.Zero)
       val cname = v.claimable.map(_.symbol.show).mkString("/")
-      val cvalue = v.claimable.traverse(_.valueUsd).map(_.reduce(_ + _)).getOrElse(Price.Zero)
-      s"${v.chain} $lname ${lvalue.show} [$cname ${cvalue.show}] (Farm)"
+      s"${v.chain} $lname [$cname] (Farm)"
     case v: Pool =>
       val lname = v.liquidity.map(_.symbol.show).mkString("/")
-      val lvalue = v.liquidity.traverse(_.valueUsd).map(_.reduce(_ + _)).getOrElse(Price.Zero)
-      s"${v.chain} $lname ${lvalue.show} (Pool)"
+      s"${v.chain} $lname (Pool)"
   }
 
   extension (d: Defi)
@@ -81,26 +77,3 @@ object Defi:
       case v: Stake => v.chain
       case v: Farm  => v.chain
       case v: Pool  => v.chain
-
-    def unpriced: Seq[Token] = d match
-      case v: Stake => v.liquidity.filterNot(_.isPriced).distinct
-      case v: Farm  => (v.liquidity.filterNot(_.isPriced) ++ v.claimable.filterNot(_.isPriced).distinct)
-      case v: Pool  => (v.liquidity :+ v.poolToken).filterNot(_.isPriced).distinct
-
-    def valueUsd: Try[Price] = d match
-      case v: Stake =>
-        for a <- v.liquidity.traverse(_.valueUsd)
-            b  = if a.isEmpty then Price.Zero else a.reduce(_ + _)
-        yield b
-
-      case v: Farm =>
-        for a <- v.liquidity.traverse(_.valueUsd)
-            b <- v.claimable.traverse(_.valueUsd)
-            c  = if a.isEmpty then Price.Zero else a.reduce(_ + _)
-            d  = if b.isEmpty then Price.Zero else b.reduce(_ + _)
-        yield c + d
-
-      case v: Pool =>
-        for a <- v.liquidity.traverse(_.valueUsd)
-            b  = if a.isEmpty then Price.Zero else a.reduce(_ + _)
-        yield b
