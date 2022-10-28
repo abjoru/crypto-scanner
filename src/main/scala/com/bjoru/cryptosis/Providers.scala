@@ -33,6 +33,8 @@ object Providers:
   private def mkApis(endpoints: Map[ProviderName, Endpoint], filters: Seq[TokenFilter]) =
     val apis = endpoints.collect {
       case (ProviderName.BlockCypher, e) => providers.BlockCypher(e)
+      //case (ProviderName.Elrond, e)      => providers.ElrondApi(e)
+      case (ProviderName.Solscan, e)     => providers.Solscan(e)
     }
 
     apis.toSeq

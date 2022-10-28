@@ -19,7 +19,7 @@ object Main extends IOApp:
                                   .withTimeout(2.minutes)
                                   .build
 
-  def run(args: List[String]): IO[ExitCode] = ???
+  def run(args: List[String]): IO[ExitCode] =
     for env <- IO.pure(CryptoEnv.coingecko)
         _   <- putStrLn("Loading wallets...")
         ws1 <- Wallet.loadWallets(cfgDir </> "wallets.yaml")

@@ -9,8 +9,10 @@ import com.bjoru.cryptosis.types.*
 object TokenListView:
 
   def render(env: Env, wallets: Seq[Wallet]): IO[Unit] = IO {
-    priceTokens(env, collectTokens(wallets)).foreach {
-      case (t, v) => println(s"${t.show} = ${v.show}")
+    priceTokens(env, collectTokens(wallets)).sortBy(_._1.chain).foreach {
+      case (Token(_, _, s, c, _, _, b), v) => 
+        val bal = s"${b.show} $s"
+        println(f"$c%-10s $bal%-20s = ${v.show}%10s")
     }
   }
 

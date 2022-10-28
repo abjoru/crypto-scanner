@@ -28,6 +28,8 @@ trait Env:
     */
   def register(items: (Token | Defi)*)(using Client[IO]): IO[Result[Seq[Token | Defi]]]
 
+  def registerWithPrice(tokens: (Token, Option[Price])*)(using Client[IO]): IO[Result[Seq[Token]]]
+
   /** Get bluechip token (gas/network token) for a given chain.
     * Bluechip tokens should always be registered, so this 
     * function does not require an effect.

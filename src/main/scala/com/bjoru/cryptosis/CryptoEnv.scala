@@ -10,6 +10,13 @@ import com.bjoru.cryptosis.oracles.*
 
 class CryptoEnv(val priceApi: PricingApi, tokenApi: TokenApi) extends Env:
 
+  def registerWithPrice(tokens: (Token, Option[Price])*)(using Client[IO]): IO[Result[Seq[Token]]] =
+    val priced = tokens.collect { case (t, Some(p)) => (t, p) }
+    val newPriceApi = priceApi.registerPrices(priced: _*)
+    val tokensIO = tokenApi.resolve(tokens.map(_._1): _*)
+
+    tokensIO.map(tx => Result.of(tx)(using CryptoEnv(newPriceApi, tokenApi)))
+
   def register(items: (Token | Defi)*)(using Client[IO]): IO[Result[Seq[Token | Defi]]] =
     val newPriceApi = items.foldLeft(priceApi) {
       case (acc, t: Token) => acc.register(t)

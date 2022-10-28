@@ -7,6 +7,7 @@ import io.circe.*
 import pureconfig.ConfigReader
 import pureconfig.error.ExceptionThrown
 
+import org.http4s.QueryParamEncoder
 import org.http4s.Uri.Path.SegmentEncoder
 
 import scala.util.{Try, Success, Failure}
@@ -26,6 +27,8 @@ object Address:
   given ConfigReader[Address] = ConfigReader.stringConfigReader
 
   given Conversion[Address, String] = v => v
+
+  given QueryParamEncoder[Address] = QueryParamEncoder.stringQueryParamEncoder
 
   def fromString(str: Address): Try[Address] =
     if str.nonEmpty

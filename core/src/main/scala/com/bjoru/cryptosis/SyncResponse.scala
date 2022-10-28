@@ -11,19 +11,25 @@ import com.bjoru.cryptosis.types.*
 
 final case class SyncData(
   walletAddress: Address,
-  responseData:  Seq[Json]
+  key:           String,
+  responseData:  Seq[Json],
 )
 
 object SyncData:
 
   given Encoder[SyncData] = Encoder.instance { data =>
-    Json.obj("wallet" -> data.walletAddress.asJson, "data" -> data.responseData.asJson)
+    Json.obj(
+      "key"    -> data.key.asJson,
+      "wallet" -> data.walletAddress.asJson, 
+      "data"   -> data.responseData.asJson
+    )
   }
 
   given Decoder[SyncData] = Decoder.instance { hc =>
     for wallet <- hc.downField("wallet").as[Address]
+        key    <- hc.downField("key").as[String]
         data   <- hc.downField("data").as[Seq[Json]]
-    yield SyncData(wallet, data)
+    yield SyncData(wallet, key, data)
   }
 
 trait SyncResponse:

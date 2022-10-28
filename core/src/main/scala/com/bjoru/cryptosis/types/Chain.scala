@@ -1,5 +1,7 @@
 package com.bjoru.cryptosis.types
 
+import cats.syntax.show.*
+
 import io.circe.*
 
 import pureconfig.ConfigReader
@@ -29,6 +31,8 @@ enum Chain(val symbol: Symbol):
   case Unknown   extends Chain(Symbol.Unknown)
 
 object Chain:
+
+  given Ordering[Chain] = Ordering.by(_.toString)
 
   given Encoder[Chain] = Encoder.encodeString.contramap(_.toString.toLowerCase)
 

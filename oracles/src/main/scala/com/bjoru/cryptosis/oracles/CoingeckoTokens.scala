@@ -72,15 +72,15 @@ class CoingeckoTokens extends TokenApi:
     }
 
   def cache: IO[Map[Id, Token]] =
-    loadJson[Map[Id, Token]](CACHE_FILE).handleError(_ => Map.empty)
+    loadJson[Seq[Token]](CACHE_FILE).handleError(_ => Seq.empty).map(_.map(v => v.id -> v).toMap)
 
   def missed: IO[Map[Id, Token]] =
-    loadJson[Map[Id, Token]](MISSED_FILE).handleError(_ => Map.empty)
+    loadJson[Seq[Token]](MISSED_FILE).handleError(_ => Seq.empty).map(_.map(v => v.id -> v).toMap)
 
   def geckos(using Client[IO]): IO[Map[Id, Token]] =
     if GECKO_FILE.expired(10.days)
       then fetchGeckos
-      else loadJson[Map[Id, Token]](GECKO_FILE)
+      else loadJson[Seq[Token]](GECKO_FILE).map(_.map(v => v.id -> v).toMap)
 
   ///////////////////////
   // Utility functions //
@@ -89,14 +89,14 @@ class CoingeckoTokens extends TokenApi:
   private def saveIf(f: FilePath, data: Seq[Token], coll: Map[Id, Token]): IO[Unit] =
     if data.isEmpty
       then IO.unit
-      else saveJson(f, coll ++ data.map(t => t.id -> t).toMap)
+      else saveJson(f, coll.values.toSeq ++ data)
 
   private def fetchGeckos(using client: Client[IO]): IO[Map[Id, Token]] = 
     for json <- client.expect[Seq[GToken]](geckoUri)
         toks  = processGeckoTokens(json)
         res   = toks._2.map(t => t.id -> t).toMap
         _    <- GECKO_FILE.delete
-        _    <- saveJson(GECKO_FILE, res)
+        _    <- saveJson(GECKO_FILE, res.values.toSeq)
         _    <- checkBluechips(toks._1)
     yield res
 
@@ -104,7 +104,7 @@ class CoingeckoTokens extends TokenApi:
     def saveIfNeeded(cx: Map[Id, Token], nx: Seq[Token]): IO[Unit] =
       if nx.isEmpty
         then IO.unit
-        else saveJson(CACHE_FILE, cx ++ nx.map(v => v.id -> v))
+        else saveJson(CACHE_FILE, cx.values.toSeq ++ nx)
 
     for cx <- cache
         ms  = tokens.filterNot(t => cx.contains(t.id))
@@ -172,7 +172,7 @@ object GToken:
         b <- hc.downField("symbol").as[Symbol]
         c <- hc.downField("name").as[String]
         d <- hc.downField("platforms").as[Json].map(decodeMap)
-    yield GToken(a, b, c, d)
+    yield GToken(a, b, c, Map.empty)
   }
 
   private def decodeMap(json: Json): Map[Chain, Option[Address]] =
