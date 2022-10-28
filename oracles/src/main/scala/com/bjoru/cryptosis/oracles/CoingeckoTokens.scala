@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.syntax.traverse.given
 
 import io.circe.*
+import io.circe.syntax.*
 
 import org.http4s.Uri
 import org.http4s.client.Client
@@ -16,6 +17,27 @@ import com.bjoru.cryptosis.types.*
 import scala.concurrent.duration.*
 
 class CoingeckoTokens extends TokenApi:
+
+  given Encoder[Token] = Encoder.instance { token =>
+    Json.obj(
+      "id"       -> token.geckoId.asJson,
+      "name"     -> token.name.asJson,
+      "symbol"   -> token.symbol.asJson,
+      "chain"    -> token.chain.asJson,
+      "decimals" -> token.decimals.asJson,
+      "contract" -> token.contract.asJson
+    )
+  }
+
+  given Decoder[Token] = Decoder.instance { hc =>
+    for i <- hc.downField("id").as[String]
+        n <- hc.downField("name").as[String]
+        s <- hc.downField("symbol").as[Symbol]
+        c <- hc.downField("chain").as[Chain]
+        d <- hc.downField("decimals").as[Int]
+        a <- hc.downField("contract").as[Option[Address]]
+    yield Token(i, n, s, c, a, d, Balance.Zero)
+  }
 
   val geckoUri: Uri = uri"https://api.coingecko.com/api/v3/coins/list?include_platform=true"
 

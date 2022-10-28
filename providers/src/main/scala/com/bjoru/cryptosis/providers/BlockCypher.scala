@@ -30,23 +30,15 @@ class BlockCypher(ep: Endpoint) extends ProviderApi("blockcypher"):
         jsn <- client.expect[Json](url)
     yield SyncData(wallet.address, "bal", Seq(jsn))
 
-class BlockChainResponse(val data: Seq[SyncData]) extends SyncResponse:
-
-  def syncWallets(wallets: Seq[Wallet])(env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] = 
-    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((e2, wx), w) => parseSyncData(e2)(w).map(v => v._1 -> (wx :+ v._2))
-    }
+class BlockChainResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
 
   def withData(extras: Seq[SyncData]): SyncResponse = 
     BlockChainResponse(data ++ extras)
 
-  private def parseSyncData(env: Env)(wallet: Wallet)(using Client[IO]): IO[(Env, Wallet)] =
-    data.find(_.walletAddress == wallet.address) match
-      case Some(SyncData(_, "bal", Seq(json))) =>
-        for token <- env.bluechip(wallet.chain)
-            env2  <- env.register(token)
-            tok2   = env2._2.collect { case t: Token => t }.head
-            res   <- IO.fromEither(json.hcursor.downField("balance").as[BigInt])
-            bal   <- IO.fromTry(Balance.convert(tok2.decimals, res))
-        yield env2._1 -> wallet.addBalances(tok2.withBalance(bal))
-      case _ => IO.pure(env -> wallet)
+  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
+    case SyncData(_, "bal", Seq(json)) =>
+      for tok1 <- env.bluechip(wallet.chain)
+          reg  <- env.registerToken(tok1)
+          num  <- json.hcursor.downField("balance").as[BigInt].toIO
+          bal  <- Balance.convert(reg.data.decimals, num).toIO
+      yield reg.env -> wallet.addBalances(reg.data.withBalance(bal))

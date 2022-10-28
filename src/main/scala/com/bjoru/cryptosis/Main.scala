@@ -22,7 +22,7 @@ object Main extends IOApp:
   def run(args: List[String]): IO[ExitCode] =
     for env <- IO.pure(CryptoEnv.coingecko)
         _   <- putStrLn("Loading wallets...")
-        ws1 <- Wallet.loadWallets(cfgDir </> "wallets.yaml")
+        ws1 <- Wallet.loadWallets
         _   <- putStrLn("Syncing providers...")
         ws2 <- clientR.use(Providers.syncAndUpdateWallets(ws1)(using _).run(env))
         _   <- putStrLn("Syncing prices...")

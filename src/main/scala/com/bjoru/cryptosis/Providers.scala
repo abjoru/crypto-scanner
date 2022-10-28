@@ -27,14 +27,14 @@ object Providers:
 
   private def loadProviders: IO[Seq[ProviderApi]] =
     for endpoints <- loadYaml[Map[ProviderName, Endpoint]](PROVIDERS)
-        filters   <- loadYaml[Seq[TokenFilter]](FILTERS).handleError(_ => Seq.empty)
-    yield mkApis(endpoints, filters)
+    yield mkApis(endpoints)
 
-  private def mkApis(endpoints: Map[ProviderName, Endpoint], filters: Seq[TokenFilter]) =
+  private def mkApis(endpoints: Map[ProviderName, Endpoint]) =
     val apis = endpoints.collect {
       case (ProviderName.BlockCypher, e) => providers.BlockCypher(e)
-      //case (ProviderName.Elrond, e)      => providers.ElrondApi(e)
+      case (ProviderName.Elrond, e)      => providers.ElrondApi(e)
       case (ProviderName.Solscan, e)     => providers.Solscan(e)
+      case (ProviderName.CovalentHQ, e)  => providers.CovalentHQ(e)
     }
 
     apis.toSeq

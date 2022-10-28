@@ -20,6 +20,9 @@ final case class Token(
   balance:  Balance
 )
 
+// Do not add encoders/decoders for tokens here as
+// providers will need to define their own versions
+// that fits their datasets.
 object Token:
 
   given Identity[Token] with
@@ -29,27 +32,6 @@ object Token:
     s"${v.chain} ${v.balance.show} ${v.symbol.show} ${v.contract.map(a => s"(${a.show})").getOrElse("")}"
   }
 
-  given Encoder[Token] = Encoder.instance { token =>
-    Json.obj(
-      "id"       -> token.geckoId.asJson,
-      "name"     -> token.name.asJson,
-      "symbol"   -> token.symbol.asJson,
-      "chain"    -> token.chain.asJson,
-      "decimals" -> token.decimals.asJson,
-      "contract" -> token.contract.asJson
-    )
-  }
-
-  given Decoder[Token] = Decoder.instance { hc =>
-    for i <- hc.downField("id").as[String]
-        n <- hc.downField("name").as[String]
-        s <- hc.downField("symbol").as[Symbol]
-        c <- hc.downField("chain").as[Chain]
-        d <- hc.downField("decimals").as[Int]
-        a <- hc.downField("contract").as[Option[Address]]
-    yield Token(i, n, s, c, a, d, Balance.Zero)
-  }
-
   extension (t: Token)
 
     def withName(name: String): Token =
@@ -57,6 +39,9 @@ object Token:
 
     def withSymbol(symbol: Symbol): Token =
       t.copy(symbol = symbol)
+
+    def withChain(chain: Chain): Token =
+      t.copy(chain = chain)
 
     def withBalance(balance: Balance): Token =
       t.copy(balance = balance)

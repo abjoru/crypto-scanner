@@ -16,10 +16,8 @@ import com.bjoru.cryptosis.types.*
 
 class Solscan(ep: Endpoint) extends ProviderApi("solscan"):
 
-  val chainFilter: Wallet => Boolean = _.chain == Chain.Solana
-
   protected def sync(wallets: Seq[Wallet])(using Client[cats.effect.IO]): IO[SyncResponse] =
-    for ws <- IO.pure(wallets.filter(chainFilter))
+    for ws <- IO.pure(wallets.filter(_.chain == Chain.Solana))
         r1 <- ws.traverse(solBalance)
         r2 <- ws.traverse(tokBalance)
         r3 <- ws.traverse(staking)
@@ -40,7 +38,7 @@ class Solscan(ep: Endpoint) extends ProviderApi("solscan"):
         res <- client.expect[Json](uri)
     yield SyncData(wallet.address, "stake", Seq(res))
 
-class SolscanResponse(val data: Seq[SyncData]) extends SyncResponse:
+class SolscanResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
 
   given Decoder[Token] = Decoder.instance { hc =>
     for a <- hc.downField("tokenAddress").as[Address]
@@ -57,29 +55,22 @@ class SolscanResponse(val data: Seq[SyncData]) extends SyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse = 
     SolscanResponse(data ++ extras)
 
-  def syncWallets(wallets: Seq[Wallet])(env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    // FIXME this won't work! we silently filtering wallets here!!
-    wallets.foldLeftM(env -> Seq.empty[Wallet])(processWallet)
-
-  def processWallet(acc: (Env, Seq[Wallet]), wallet: Wallet)(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    data.filter(_.walletAddress == wallet.address).foldLeftM(acc) {
-      case ((env, wx), d) => parseData(env, wallet, d).map(v => v._1 -> (wx :+ v._2))
-    }
-
-  def parseData(env: Env, w: Wallet, d: SyncData)(using Client[IO]): IO[(Env, Wallet)] = d match
+  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "sol", Seq(json)) =>
-      for sol <- env.bluechip(Chain.Solana)
-          lam <- IO.fromEither(json.hcursor.downField("lamports").as[BigDecimal])
+      for tok <- env.bluechip(Chain.Solana)
+          reg <- env.registerToken(tok)
+          lam <- json.hcursor.downField("lamports").as[BigDecimal].toIO
           bal  = Balance(lam / LAMPORTS_PR_SOL)
-      yield env -> w.addBalances(sol.withBalance(bal))
+      yield reg.tuple(t => wallet.addBalances(t.withBalance(bal)))
+      
     case SyncData(_, "bal", jsons) =>
-      for sym <- IO.fromEither(jsons.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)))
-          res <- IO.fromEither(sym.filter(_._2.isDefined).traverse(_._1.as[Token]))
-          slv <- env.register(res: _*)
-      yield slv.env -> w.addBalances(slv.data: _*)
+      for sym <- jsons.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)).toIO
+          res <- sym.filter(_._2.isDefined).traverse(_._1.as[Token]).toIO
+          reg <- env.register(res)
+      yield reg.tuple(tx => wallet.addBalances(tx: _*))
+
     case SyncData(_, "stake", Seq(json)) =>
-      IO.pure(json.hcursor.keys.map(_.head)).flatMap(parseStake(env, w, json))
-    case _ => IO.pure(env -> w)
+      IO.pure(json.hcursor.keys.map(_.head)).flatMap(parseStake(env, wallet, json))
 
   def parseStake(
     env: Env, 
@@ -87,11 +78,11 @@ class SolscanResponse(val data: Seq[SyncData]) extends SyncResponse:
     json: Json
   )(key: Option[String])(using Client[IO]): IO[(Env, Wallet)] = key match
     case Some(k) =>
-      for a <- IO.fromEither(json.hcursor.downField(k).as[Json])
-          b <- IO.fromEither(a.hcursor.downField("amount").as[String])
+      for a <- json.hcursor.downField(k).as[Json].toIO
+          b <- a.hcursor.downField("amount").as[String].toIO
           c <- env.bluechip(Chain.Solana)
           d  = Balance(BigDecimal(b) / LAMPORTS_PR_SOL)
-          e <- env.register(c)
-          f  = c.withBalance(d)
+          e <- env.registerToken(c)
+          f  = e.data.withBalance(d)
       yield e.env -> w.addBalances(Defi.Stake("solscan-sol-staking", "Solana Staking", Chain.Solana, Seq(f)))
     case None => IO.pure(env -> w)

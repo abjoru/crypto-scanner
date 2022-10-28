@@ -17,7 +17,7 @@ class CryptoEnv(val priceApi: PricingApi, tokenApi: TokenApi) extends Env:
 
     tokensIO.map(tx => Result.of(tx)(using CryptoEnv(newPriceApi, tokenApi)))
 
-  def register(items: (Token | Defi)*)(using Client[IO]): IO[Result[Seq[Token | Defi]]] =
+  def register(items: Seq[Token | Defi])(using Client[IO]): IO[Result[Seq[Token | Defi]]] =
     val newPriceApi = items.foldLeft(priceApi) {
       case (acc, t: Token) => acc.register(t)
       case (acc, d: Defi)  => acc.register(d.tokens: _*)

@@ -17,7 +17,7 @@ import com.bjoru.cryptosis.syntax.*
 
 import scala.io.Source
 import scala.concurrent.duration.*
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import scala.reflect.ClassTag
 
 import java.io.{File, BufferedWriter, FileWriter}
@@ -98,10 +98,21 @@ extension (v: Path)
 extension [T](t: Try[T])
   def toCirce(hc: HCursor): Result[T] =
     t.toEither.left.map(e => DF.fromThrowable(e, hc.history))
+  def toIO: IO[T] = t match
+    case Success(a) => IO.pure(a)
+    case Failure(e) => IO.raiseError(e)
+
+extension [T](t: Either[Throwable, T])
+  def toIO: IO[T] = t match
+    case Right(a) => IO.pure(a)
+    case Left(er) => IO.raiseError(Exception(er.getMessage.take(500)))
 
 extension [T](t: Option[T])
   def toCirce: Result[T] =
     t.fold(Left(DF("empty field!", List.empty)))(Right(_))
+  def toIO: IO[T] = t match
+    case Some(a) => IO.pure(a)
+    case None    => IO.raiseError(Exception("Empty field!"))
 
 /////////////////
 // Typeclasses //

@@ -20,3 +20,5 @@ object TokenFilter:
       tokens.filterNot { token =>
         token.contract.map(f.ignore.contains(_)).getOrElse(false)
       }
+
+  def empty(chain: Chain) = TokenFilter(chain, Seq.empty)
