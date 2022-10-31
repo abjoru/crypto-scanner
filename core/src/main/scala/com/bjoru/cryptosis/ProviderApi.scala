@@ -11,7 +11,7 @@ import com.bjoru.cryptosis.instances.given
 
 import scala.concurrent.duration.*
 
-trait ProviderApi(name: String):
+trait ProviderApi(val name: String):
 
   final def update(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
     for status <- checkCaches(wallets)
@@ -27,7 +27,7 @@ trait ProviderApi(name: String):
       case ((data, wx), w) if fileName(w.address).expired(4.hours) =>
         IO.pure(data -> (wx :+ w))
       case ((data, wx), w) if fileName(w.address).exists =>
-        loadJson[SyncData](fileName(w.address)).map(d => (data :+ d) -> wx)
+        loadJson[Seq[SyncData]](fileName(w.address)).map(d => (data ++ d) -> wx)
       case ((data, wx), w) =>
         IO.pure(data -> (wx :+ w))
     }
@@ -36,4 +36,5 @@ trait ProviderApi(name: String):
     cryptosisDirectory(Xdg.Cache) </> s"$name-$w.json"
 
   private def cacheData(resp: SyncResponse): IO[Unit] = 
-    resp.data.traverse(d => saveJson(fileName(d.walletAddress), d)) >> IO.unit
+    val data = resp.data.groupBy(_.walletAddress)
+    data.toSeq.traverse((a, dx) => saveJson(fileName(a), dx)) >> IO.unit

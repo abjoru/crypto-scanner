@@ -48,6 +48,10 @@ lazy val exchanges = (project in file("exchanges"))
   .dependsOn(core)
   .settings(name := "cryptosis-exchanges")
 
+lazy val contracts = (project in file("contracts"))
+  .enablePlugins(ContractGeneratorPlugin)
+  .settings(name := "cryptosis-exchanges")
+
 lazy val cryptosis = (project in file("cryptosis"))
   .settings(
     name := "cryptosis-core",
@@ -70,7 +74,7 @@ lazy val cryptosis = (project in file("cryptosis"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(cryptosis)
+  .dependsOn(oracles)
   .settings(
     name := "cryptosis-testkit",
     libraryDependencies ++= Seq(
@@ -81,5 +85,5 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(core, oracles, providers, exchanges)
+  .dependsOn(core, oracles, providers, exchanges, contracts)
   .settings(name := "cryptosis")

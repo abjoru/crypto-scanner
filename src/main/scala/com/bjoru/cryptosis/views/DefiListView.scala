@@ -8,14 +8,14 @@ import com.bjoru.cryptosis.types.*
 
 object DefiListView:
 
-  def render(env: Env, wallets: Seq[Wallet]): IO[Unit] = IO {
-    priceDefi(env, collectDefi(wallets)).foreach {
+  def render(wallets: Seq[Wallet]): SIO[Unit] = SIO.inspect { state =>
+    priceDefi(state, collectDefi(wallets)).foreach {
       case (d, v) => println(s"${d.show} = ${v.show}")
     }
   }
 
-  def priceDefi(env: Env, defi: Map[Id, Defi]) =
-    defi.values.map(d => (d, env.priceApi.valueOf(d)))
+  def priceDefi(state: State, defi: Map[Id, Defi]) =
+    defi.values.map(d => (d, state.valueOf(d)))
 
   def collectDefi(wallets: Seq[Wallet]): Map[Id, Defi] =
     wallets.foldLeft(Map.empty[Id, Defi])((a, b) => populateMap(b, a))

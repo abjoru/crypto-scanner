@@ -14,13 +14,13 @@ final case class Wallet(
   chain:    Chain,
   address:  Address,
   balances: Map[Id, Token | Defi],
-  filter:   TokenFilter
+  filters:  Map[Chain, TokenFilter]
 )
 
 object Wallet:
 
   given ConfigReader[Wallet] = ConfigReader.forProduct3("name", "chain", "address")(
-    (name: String, chain: Chain, address: Address) => Wallet(name, chain, address, Map.empty, TokenFilter.empty(chain))
+    (name: String, chain: Chain, address: Address) => Wallet(name, chain, address, Map.empty, Map.empty)
   )
 
   extension (w: Wallet)
@@ -35,16 +35,15 @@ object Wallet:
 
     def withChain(chain: Chain): Wallet = w.copy(chain = chain)
 
-    def withFilter(filter: Option[TokenFilter]): Wallet = filter match 
-      case Some(f) => w.copy(filter = f)
-      case None    => w
+    def withFilters(filters: Seq[TokenFilter]): Wallet = 
+      w.copy(filters = filters.map(f => f.chain -> f).toMap)
 
     def merge(other: Wallet): Wallet =
       w.addBalances(other.balances.values.toSeq: _*)
 
-    private def accept(t: Token): Boolean = t.contract match
-      case Some(a) => !w.filter.ignore.contains(a)
-      case None    => true
+    private def accept(t: Token): Boolean = (t.contract, w.filters.get(t.chain)) match
+      case (Some(a), Some(f)) => !f.ignore.contains(a)
+      case _                  => true
 
   def mergeAll(a: Seq[Wallet], b: Seq[Wallet]): Seq[Wallet] =
     val map = b.map(v => v.address -> v).toMap
@@ -53,6 +52,5 @@ object Wallet:
   def loadWallets: IO[Seq[Wallet]] =
     for cfgDir  <- IO.pure(cryptosisDirectory(Xdg.Config))
         wallets <- loadYaml[Seq[Wallet]](cfgDir </> "wallets.yaml")
-        filters <- loadYaml[Seq[TokenFilter]](cfgDir </> "token-filters.yaml")
-        filterM  = filters.map(f => f.chain -> f).toMap
-    yield wallets.map(w => w.withFilter(filterM.get(w.chain)))
+        filters <- TokenFilter.loadTokenFilters(cfgDir </> "token-filters.yaml")
+    yield wallets.map(w => w.withFilters(filters))

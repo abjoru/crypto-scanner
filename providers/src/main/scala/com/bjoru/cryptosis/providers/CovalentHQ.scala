@@ -45,49 +45,60 @@ class CovalentHQ(ep: Endpoint) extends ProviderApi("covalenthq"):
     yield uri
 
   protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
-    val res = wallets.filter(w => supportedChains.contains(w.chain)).traverse {
-      case w if w.isMultichain => multichain(w)
-      case w                   => balance(w)
-    }
+    for ws <- IO.pure(wallets.filter(w => supportedChains.contains(w.chain)))
+        _  <- putStrLn(f"$name%-15s: synchronizing wallets...")
+        rs <- ws.foldLeftM(Seq.empty[SyncData])((a, b) => syncWallet(b).map(_ ++ a))
+    yield CovalentResponse(rs)
 
-    res.map(CovalentResponse(_))
+  protected def syncWallet(w: Wallet)(using Client[IO]): IO[Seq[SyncData]] = 
+    if w.isMultichain
+      then multichain(w)
+      else balance(w).map(Seq(_))
 
   def balance(wallet: Wallet)(using client: Client[IO]): IO[SyncData] =
     for uri <- mkUri(wallet)
         jsn <- client.expect[Json](uri)
     yield SyncData(wallet.address, "bal", Seq(jsn))
 
-  def multichain(wallet: Wallet)(using Client[IO]): IO[SyncData] =
+  def multichain(wallet: Wallet)(using Client[IO]): IO[Seq[SyncData]] =
     supportedChains.filterNot(_ == Chain.Solana)
                    .traverse(ch => balance(wallet.withChain(ch)).map(_.withKey(ch.toString)))
-                   .map(_.reduce(_ + _))
 
 class CovalentResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
 
   given Decoder[(Token, Option[Price])] = Decoder.instance { hc =>
-    for a <- hc.downField("contract_name").as[String]
+    for a <- hc.downField("contract_name").as[Option[String]]
         b <- hc.downField("contract_ticker_symbol").as[Symbol]
         c <- hc.downField("contract_decimals").as[Int]
         d <- hc.downField("contract_address").as[Option[Address]]
         e <- hc.downField("balance").as[BigInt]
         f <- hc.downField("quote_rate").as[Option[Price]]
         r <- Balance.convert(c, e).toCirce(hc)
-    yield Token(a, a, b, Chain.Unknown, d, c, r) -> f
+    yield Token(a.getOrElse(b.lower), a.getOrElse(b.lower), b, Chain.Unknown, d, c, r) -> f
   }
 
   def withData(extras: Seq[SyncData]): SyncResponse = CovalentResponse(data ++ extras)
 
-  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", Seq(json)) =>
       for items <- IO.pure(json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty))
           toks  <- items.toSeq.traverse(_.as[(Token, Option[Price])]).toIO
-          regs  <- env.registerWithPrice(toks)
-      yield regs.tuple(tx => wallet.addBalances(tx: _*))
+          regs   = state.resolveAllWithPrice(toks.map(v => v._1 -> v._2.getOrElse(Price.Zero)))
+      yield regs._1 -> wallet.addBalances(regs._2: _*)
 
-    case SyncData(_, chKey, Seq(json)) =>
-      for chain <- Chain.fromString(chKey).toIO
-          items  = json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty)
-          toks  <- items.toSeq.traverse(_.as[(Token, Option[Price])]).toIO
-          toks2  = toks.map(v => (v._1.withChain(chain), v._2))
-          regs  <- env.registerWithPrice(toks2)
-      yield regs.tuple(tx => wallet.addBalances(tx: _*))
+    case SyncData(_, chKey, jsons) =>
+      jsons.foldLeftM(state -> wallet) {
+        case ((st2, w), json) =>
+          for chain <- Chain.fromString(chKey).toIO
+              items  = json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty)
+              jsns   = items.filterNot(reject)
+              toks1 <- jsns.toSeq.traverse(_.as[(Token, Option[Price])]).toIO
+              toks2  = toks1.map(v => (v._1.withChain(chain), v._2.getOrElse(Price.Zero)))
+              regs   = st2.resolveAllWithPrice(toks2)
+          yield regs._1 -> w.addBalances(regs._2: _*)
+      }
+
+  def reject(json: Json): Boolean = Seq(
+    json.hcursor.downField("contract_ticker_symbol").focus.map(_.isNull).getOrElse(false),
+    json.hcursor.downField("type").as[String].map(_ == "dust").getOrElse(false)
+  ).contains(true)

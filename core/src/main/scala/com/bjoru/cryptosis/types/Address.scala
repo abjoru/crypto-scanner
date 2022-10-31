@@ -30,7 +30,7 @@ object Address:
 
   given QueryParamEncoder[Address] = QueryParamEncoder.stringQueryParamEncoder
 
-  def fromString(str: Address): Try[Address] =
+  def fromString(str: String): Try[Address] =
     if str.nonEmpty
       then Success(str)
       else Failure(Exception("address cannot be empty!"))

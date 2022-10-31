@@ -25,21 +25,21 @@ import java.nio.file.{Path, Paths}
 
 type FilePath = Path
 
-type SIO[T] = StateT[IO, Env, T]
+type SIO[T] = StateT[IO, State, T]
 
 object SIO:
 
-  def apply[T](f: Env => IO[(Env, T)]): SIO[T] = StateT.apply(f)
-  def applyF[T](runF: IO[Env => IO[(Env, T)]]): SIO[T] = StateT.applyF(runF)
-  def get: SIO[Env] = StateT.get
-  def inspect[T](f: Env => T): SIO[T] = StateT.inspect(f)
-  def inspectF[T](f: Env => IO[T]): SIO[T] = StateT.inspectF(f)
+  def apply[T](f: State => IO[(State, T)]): SIO[T] = StateT.apply(f)
+  def applyF[T](runF: IO[State => IO[(State, T)]]): SIO[T] = StateT.applyF(runF)
+  def get: SIO[State] = StateT.get
+  def inspect[T](f: State => T): SIO[T] = StateT.inspect(f)
+  def inspectF[T](f: State => IO[T]): SIO[T] = StateT.inspectF(f)
   def liftF[T](io: IO[T]): SIO[T] = StateT.liftF(io)
-  def modify(f: Env => Env): SIO[Unit] = StateT.modify(f)
-  def modifyF(f: Env => IO[Env]): SIO[Unit] = StateT.modifyF(f)
+  def modify(f: State => State): SIO[Unit] = StateT.modify(f)
+  def modifyF(f: State => IO[State]): SIO[Unit] = StateT.modifyF(f)
   def pure[T](v: T): SIO[T] = StateT.pure(v)
-  def set(e: Env): SIO[Unit] = StateT.set(e)
-  def setF(ioe: IO[Env]): SIO[Unit] = StateT.setF(ioe)
+  def set(e: State): SIO[Unit] = StateT.set(e)
+  def setF(ioe: IO[State]): SIO[Unit] = StateT.setF(ioe)
 
 enum Xdg:
   case Data
@@ -70,6 +70,11 @@ def loadJson[T](file: FilePath)(using Decoder[T]): IO[T] =
       json <- IO.fromEither(parse(src))
       res  <- IO.fromEither(json.as[T])
   yield res
+
+def loadJsonOrElse[T](file: FilePath)(orElse: => T)(using Decoder[T]): IO[T] =
+  if file.exists
+    then loadJson(file)
+    else IO.pure(orElse)
 
 def saveJson[T](file: FilePath, data: T)(using Encoder[T]): IO[Unit] =
   for dir <- file.mkdirs

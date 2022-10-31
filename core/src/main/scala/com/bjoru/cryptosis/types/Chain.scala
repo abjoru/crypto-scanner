@@ -28,6 +28,10 @@ enum Chain(val symbol: Symbol):
   case Celo      extends Chain(Symbol.Celo)
   case Moonriver extends Chain(Symbol.Movr)
   case Aurora    extends Chain(Symbol.Eth)
+  case Energi    extends Chain(Symbol.Nrg)
+  case Cronos    extends Chain(Symbol.Cro)
+  case SmartBCH  extends Chain(Symbol.Bch)
+  case NearProtocol extends Chain(Symbol.Near)
   case Unknown   extends Chain(Symbol.Unknown)
 
 object Chain:
@@ -49,4 +53,6 @@ object Chain:
 
   private def fromCustom(str: String): Try[Chain] = str match
     case "binance-smart-chain" => Success(Chain.Binance)
+    case "smartbch"            => Success(Chain.SmartBCH)
+    case "nearprotocol"        => Success(Chain.NearProtocol)
     case _                     => Failure(Exception(s"Cannot decode '$str' as Chain!"))

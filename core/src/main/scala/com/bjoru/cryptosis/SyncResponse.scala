@@ -1,6 +1,8 @@
 package com.bjoru.cryptosis
 
+import cats.Show
 import cats.effect.IO
+import cats.syntax.show.*
 import cats.syntax.foldable.*
 
 import org.http4s.client.Client
@@ -17,6 +19,10 @@ final case class SyncData(
 )
 
 object SyncData:
+
+  given Show[SyncData] = Show.show { d =>
+    s"${d.walletAddress} ${d.key} ${d.responseData.size} json docs"
+  }
 
   given Encoder[SyncData] = Encoder.instance { data =>
     Json.obj(
@@ -52,7 +58,7 @@ trait SyncResponse:
     * @param wallets list of wallets to sync.
     * @return StateT of env and updated wallets
     */
-  def syncWallets(wallets: Seq[Wallet])(env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])]
+  def syncWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]]
 
   /** Makes a copy of this response with the extra data added.
     *
@@ -68,22 +74,31 @@ trait FoldableSyncResponse extends SyncResponse:
 
   type Response[T] = PartialFunction[SyncData, IO[T]]
 
-  final def syncWallets(wallets: Seq[Wallet])(env: Env)(using Client[IO]): IO[(Env, Seq[Wallet])] =
-    wallets.foldLeftM(env -> Seq.empty[Wallet]) {
-      case ((env2, updWallets), wallet) => intSyncWallet(env2, wallet).map {
-        case (env3, updWallet) => (env3, updWallets :+ updWallet)
+  final def syncWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = SIO { state =>
+    wallets.foldLeftM(state -> Seq.empty[Wallet]) {
+      case ((s2, updWallets), wallet) => intSyncWallet(s2, wallet).map {
+        case (s3, updWallet) => (s3, updWallets :+ updWallet)
       }
     }
+  }
 
-  private def intSyncWallet(env: Env, wallet: Wallet)(using Client[IO]): IO[(Env, Wallet)] = 
+  private def intSyncWallet(state: State, wallet: Wallet)(using Client[IO]): IO[(State, Wallet)] = 
     val matchingData = data.filter(_.walletAddress == wallet.address)
 
     if matchingData.isEmpty
-      then IO.pure(env -> wallet)
-      else matchingData.foldLeftM(env -> wallet)((a, b) => intProcessData(a._1, a._2, b))
+      then IO.pure(state -> wallet)
+      else matchingData.foldLeftM(state -> wallet)((a, b) => intProcessData(a._1, a._2, b))
 
-  private def intProcessData(env: Env, wallet: Wallet, item: SyncData)(using Client[IO]): IO[(Env, Wallet)] =
-    val func = syncWallet(env, wallet).orElse(_ => IO.pure(env -> wallet))
+  private def intProcessData(
+    state: State, 
+    wallet: Wallet, 
+    item: SyncData
+  )(using Client[IO]): IO[(State, Wallet)] =
+    val func = syncWallet(state, wallet).orElse { _ =>
+      println(s"WARNING: No handler for ${item.show}")
+      IO.pure(state -> wallet)
+    }
+    //(_ => IO.pure(state -> wallet))
     func(item)
 
-  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]): Response[(Env, Wallet)]
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]): Response[(State, Wallet)]

@@ -37,6 +37,10 @@ object Symbol:
   val Xdai  = Symbol("xdai")
   val Celo  = Symbol("celo")
   val Movr  = Symbol("movr")
+  val Nrg   = Symbol("nrg")
+  val Cro   = Symbol("cro")
+  val Bch   = Symbol("bch")
+  val Near  = Symbol("near")
 
   val Unknown = Symbol("<unknown>")
 

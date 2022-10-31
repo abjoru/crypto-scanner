@@ -23,7 +23,9 @@ class BlockCypher(ep: Endpoint) extends ProviderApi("blockcypher"):
     case _              => false
 
   protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
-    wallets.filter(chainFilter).traverse(balanceOf).map(BlockChainResponse(_))
+    for _ <- putStrLn(f"$name%-15s: syncronizing wallets...")
+        b <- wallets.filter(chainFilter).traverse(balanceOf).map(BlockChainResponse(_))
+    yield b
 
   def balanceOf(wallet: Wallet)(using client: Client[IO]): IO[SyncData] =
     for url <- IO.pure(ep.uri / wallet.chain.symbol / "main" / "addrs" / wallet.address)
@@ -35,10 +37,9 @@ class BlockChainResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse = 
     BlockChainResponse(data ++ extras)
 
-  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", Seq(json)) =>
-      for tok1 <- env.bluechip(wallet.chain)
-          reg  <- env.registerToken(tok1)
-          num  <- json.hcursor.downField("balance").as[BigInt].toIO
-          bal  <- Balance.convert(reg.data.decimals, num).toIO
-      yield reg.env -> wallet.addBalances(reg.data.withBalance(bal))
+      for rst <- IO.pure(state.bluechip(wallet.chain))
+          num <- json.hcursor.downField("balance").as[BigInt].toIO
+          bal <- Balance.convert(rst._2.decimals, num).toIO
+      yield rst._1 -> wallet.addBalances(rst._2.withBalance(bal))

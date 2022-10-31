@@ -18,10 +18,11 @@ class Solscan(ep: Endpoint) extends ProviderApi("solscan"):
 
   protected def sync(wallets: Seq[Wallet])(using Client[cats.effect.IO]): IO[SyncResponse] =
     for ws <- IO.pure(wallets.filter(_.chain == Chain.Solana))
+        _  <- putStrLn(f"$name%-15s: synchronizing wallets...")
         r1 <- ws.traverse(solBalance)
         r2 <- ws.traverse(tokBalance)
         r3 <- ws.traverse(staking)
-    yield SolscanResponse(r1 ++ r2)
+    yield SolscanResponse(r1 ++ r2 ++ r3)
 
   def solBalance(wallet: Wallet)(using client: Client[IO]): IO[SyncData] =
     for uri <- IO.pure(ep.uri / "account" / wallet.address)
@@ -55,34 +56,32 @@ class SolscanResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse = 
     SolscanResponse(data ++ extras)
 
-  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "sol", Seq(json)) =>
-      for tok <- env.bluechip(Chain.Solana)
-          reg <- env.registerToken(tok)
+      for tok <- IO.pure(state.bluechip(Chain.Solana))
           lam <- json.hcursor.downField("lamports").as[BigDecimal].toIO
           bal  = Balance(lam / LAMPORTS_PR_SOL)
-      yield reg.tuple(t => wallet.addBalances(t.withBalance(bal)))
-      
+      yield tok._1 -> wallet.addBalances(tok._2.withBalance(bal))
+
     case SyncData(_, "bal", jsons) =>
       for sym <- jsons.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)).toIO
           res <- sym.filter(_._2.isDefined).traverse(_._1.as[Token]).toIO
-          reg <- env.register(res)
-      yield reg.tuple(tx => wallet.addBalances(tx: _*))
+          reg  = state.resolveAll(res)
+      yield reg._1 -> wallet.addBalances(reg._2: _*)
 
     case SyncData(_, "stake", Seq(json)) =>
-      IO.pure(json.hcursor.keys.map(_.head)).flatMap(parseStake(env, wallet, json))
+      IO.pure(json.hcursor.keys.map(_.head)).flatMap(parseStake(state, wallet, json))
 
   def parseStake(
-    env: Env, 
+    state: State,
     w: Wallet, 
     json: Json
-  )(key: Option[String])(using Client[IO]): IO[(Env, Wallet)] = key match
+  )(key: Option[String])(using Client[IO]): IO[(State, Wallet)] = key match
     case Some(k) =>
       for a <- json.hcursor.downField(k).as[Json].toIO
           b <- a.hcursor.downField("amount").as[String].toIO
-          c <- env.bluechip(Chain.Solana)
+          c  = state.bluechip(Chain.Solana)
           d  = Balance(BigDecimal(b) / LAMPORTS_PR_SOL)
-          e <- env.registerToken(c)
-          f  = e.data.withBalance(d)
-      yield e.env -> w.addBalances(Defi.Stake("solscan-sol-staking", "Solana Staking", Chain.Solana, Seq(f)))
-    case None => IO.pure(env -> w)
+          f  = c._2.withBalance(d)
+      yield c._1 -> w.addBalances(Defi.Stake("solscan-sol-staking", "Solana Staking", Chain.Solana, Seq(f)))
+    case None => IO.pure(state -> w)

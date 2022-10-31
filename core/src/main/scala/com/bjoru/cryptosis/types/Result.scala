@@ -3,14 +3,14 @@ package com.bjoru.cryptosis.types
 import com.bjoru.cryptosis.*
 
 final case class Result[T](
-  env:  Env,
+  state:  State,
   data: T
 )
 
 object Result:
 
   extension [T](r: Result[T])
-    def tuple[U](f: T => U): (Env, U) = (r.env, f(r.data))
+    def tuple[U](f: T => U): (State, U) = (r.state, f(r.data))
 
-  def of[T](data: T)(using e: Env): Result[T] =
-    Result(e, data)
+  def of[T](data: T)(using s: State): Result[T] =
+    Result(s, data)

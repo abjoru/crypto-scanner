@@ -61,3 +61,6 @@ object Token:
 
   def mkId(symbol: Symbol, chain: Chain): Id = 
     Id.create(symbol, chain)
+
+  def simple(name: String, sym: Symbol, chain: Chain): Token =
+    Token(name.toLowerCase, name, sym, chain, None, 18, Balance.Zero)

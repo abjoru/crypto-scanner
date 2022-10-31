@@ -36,6 +36,7 @@ object Id:
   def apply(data: String): Id = data
 
   def create(data: String*): Id =
-    val input = data.reduce(_ + _)
-    val bytes = DIGEST_SHA256.digest(input.getBytes("UTF-8"))
-    bytes.map("%02x".format(_)).mkString
+    //val input = data.reduce(_ + _)
+    //val bytes = DIGEST_SHA256.digest(input.getBytes("UTF-8"))
+    //bytes.map("%02x".format(_)).mkString
+    data.map(_.toLowerCase).mkString(":")

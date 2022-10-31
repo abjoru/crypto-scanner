@@ -8,16 +8,19 @@ import com.bjoru.cryptosis.types.*
 
 object TokenListView:
 
-  def render(env: Env, wallets: Seq[Wallet]): IO[Unit] = IO {
-    priceTokens(env, collectTokens(wallets)).sortBy(_._1.chain).foreach {
+  def render(wallets: Seq[Wallet], filterDust: Boolean = true): SIO[Unit] = SIO.inspect { state =>
+    priceTokens(state, collectTokens(wallets), filterDust).sortBy(_._1.chain).foreach {
       case (Token(_, _, s, c, _, _, b), v) => 
         val bal = s"${b.show} $s"
         println(f"$c%-10s $bal%-20s = ${v.show}%10s")
     }
   }
 
-  def priceTokens(env: Env, tokens: Map[Id, Token]): Seq[(Token, Price)] =
-    tokens.values.map(t => (t, env.priceApi.valueOf(t))).toSeq
+  def priceTokens(state: State, tokens: Map[Id, Token], fDust: Boolean): Seq[(Token, Price)] =
+    tokens.values.map(t => (t, state.valueOf(t))).toSeq.filter {
+      case t if fDust => t._2 > Price(0.01)
+      case t          => true
+    }
 
   def collectTokens(wallets: Seq[Wallet]): Map[Id, Token] =
     wallets.foldLeft(Map.empty[Id, Token]) {

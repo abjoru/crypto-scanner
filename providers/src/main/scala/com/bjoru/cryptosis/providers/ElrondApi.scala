@@ -18,6 +18,7 @@ class ElrondApi(ep: Endpoint) extends ProviderApi("elrond"):
 
   protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
     for wx   <- IO.pure(wallets.filter(_.chain == Chain.Elrond))
+        _    <- putStrLn(f"$name%-15s: synchronizing wallets...")
         egld <- wx.traverse(egld)
         bal  <- wx.traverse(balance)
     yield ElrondResponse(egld ++ bal)
@@ -47,15 +48,14 @@ class ElrondResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse =
     ElrondResponse(data ++ extras)
 
-  def syncWallet(env: Env, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", jsons) =>
       for toks <- jsons.traverse(_.as[(Token, Option[Price])]).toIO
-          reg  <- env.registerWithPrice(toks)
-      yield reg.tuple(tx => wallet.addBalances(tx: _*))
+          reg   = state.resolveAllWithPrice(toks.map(v => v._1 -> v._2.getOrElse(Price.Zero)))
+      yield reg._1 -> wallet.addBalances(reg._2: _*)
 
     case SyncData(_, "egld", Seq(json)) =>
-      for tok <- env.bluechip(Chain.Elrond)
-          reg <- env.registerToken(tok)
+      for tok <- IO.pure(state.bluechip(Chain.Elrond))
           res <- json.hcursor.downField("balance").as[String].toIO
-          bal <- Balance.convert(reg.data.decimals, res).toIO
-      yield reg.tuple(wallet.addBalances(_))
+          bal <- Balance.convert(tok._2.decimals, res).toIO
+      yield tok._1 -> wallet.addBalances(tok._2)

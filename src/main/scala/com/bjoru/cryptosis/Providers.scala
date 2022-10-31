@@ -17,10 +17,16 @@ object Providers:
   def syncWallets(wallets: Seq[Wallet])(using Client[IO]): IO[Seq[SyncResponse]] =
     loadProviders.flatMap(_.traverse(_.update(wallets)))
 
-  def syncAndUpdateWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = SIO { env =>
-    syncWallets(wallets).flatMap { responses =>
-      responses.foldLeftM(env -> wallets) {
-        case ((e, acc), response) => response.syncWallets(acc)(e)
+  def syncAndUpdateWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = 
+    for resp <- SIO.liftF(syncWallets(wallets))
+        //_    <- SIO.liftF(inspectResponses(resp))
+        resu <- resp.foldLeftM(wallets)((wx, r) => r.syncWallets(wx))
+    yield resu
+
+  private def inspectResponses(rx: Seq[SyncResponse]): IO[Unit] = IO {
+    rx.foreach { resp =>
+      resp.data.foreach { dt =>
+        println(s"SyncData: ${dt.walletAddress} ${dt.key} ${dt.responseData.size} items")
       }
     }
   }
