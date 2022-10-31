@@ -13,6 +13,7 @@ lazy val circeVersion      = "0.14.1"
 lazy val pureConfigVersion = "0.17.1"
 lazy val snakeyamlVersion  = "1.32"
 lazy val stringdistVersion = "1.2.7"
+lazy val web3jVersion      = "4.9.4"
 
 lazy val munitVersion = "0.7.29"
 
@@ -48,9 +49,21 @@ lazy val exchanges = (project in file("exchanges"))
   .dependsOn(core)
   .settings(name := "cryptosis-exchanges")
 
+// TODO consider adding this with npm build ala
+// https://docs.openzeppelin.com/learn/developing-smart-contracts#compiling-solidity-source-code
 lazy val contracts = (project in file("contracts"))
-  .enablePlugins(ContractGeneratorPlugin)
-  .settings(name := "cryptosis-exchanges")
+  .enablePlugins(SolPlugin)
+  .dependsOn(core)
+  .settings(
+    name := "cryptosis-exchanges",
+    libraryDependencies ++= Seq(
+      "org.web3j" % "core" % web3jVersion
+    ),
+    solidityFiles := Seq(
+      "tokens/ERC20/ERC20.sol",
+      "mc/View.sol"
+    )
+  )
 
 lazy val cryptosis = (project in file("cryptosis"))
   .settings(
@@ -74,7 +87,7 @@ lazy val cryptosis = (project in file("cryptosis"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(oracles)
+  .dependsOn(oracles, contracts)
   .settings(
     name := "cryptosis-testkit",
     libraryDependencies ++= Seq(

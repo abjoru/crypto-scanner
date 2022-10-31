@@ -34,3 +34,6 @@ object Address:
     if str.nonEmpty
       then Success(str)
       else Failure(Exception("address cannot be empty!"))
+
+  def unsafeFromString(str: String): Address = 
+    fromString(str).get
