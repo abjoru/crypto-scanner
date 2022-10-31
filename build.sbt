@@ -51,6 +51,9 @@ lazy val exchanges = (project in file("exchanges"))
 
 // TODO consider adding this with npm build ala
 // https://docs.openzeppelin.com/learn/developing-smart-contracts#compiling-solidity-source-code
+//
+// Also consider rewriting this to local plugin:
+// https://github.com/timt/sbt-npm/blob/master/src/main/scala/io/shaka/sbt/Npm.scala
 lazy val contracts = (project in file("contracts"))
   .enablePlugins(SolPlugin)
   .dependsOn(core)
