@@ -26,3 +26,5 @@ http-client.private.env.json
 .bloop/
 .metals/
 project/metals.sbt
+node_modules
+cache
