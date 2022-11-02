@@ -49,22 +49,21 @@ lazy val exchanges = (project in file("exchanges"))
   .dependsOn(core)
   .settings(name := "cryptosis-exchanges")
 
-// TODO consider adding this with npm build ala
-// https://docs.openzeppelin.com/learn/developing-smart-contracts#compiling-solidity-source-code
-//
-// Also consider rewriting this to local plugin:
-// https://github.com/timt/sbt-npm/blob/master/src/main/scala/io/shaka/sbt/Npm.scala
-lazy val contracts = (project in file("contracts"))
-  .enablePlugins(SolPlugin)
+/////////////////////
+// Smart contracts //
+/////////////////////
+
+lazy val ethereum = (project in file("contracts/ethereum"))
+  .enablePlugins(Web3Plugin, BoilerplatePlugin)
   .dependsOn(core)
   .settings(
-    name := "cryptosis-exchanges",
+    name := "cryptosis-contracts-ethereum",
     libraryDependencies ++= Seq(
       "org.web3j" % "core" % web3jVersion
     ),
-    solidityFiles := Seq(
-      "tokens/ERC20/ERC20.sol",
-      "mc/View.sol"
+    web3Contracts := Seq(
+      "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "contracts/mc/View.sol"
     )
   )
 
@@ -90,7 +89,7 @@ lazy val cryptosis = (project in file("cryptosis"))
   )
 
 lazy val testKit = (project in file("testKit"))
-  .dependsOn(oracles, contracts)
+  .dependsOn(oracles, ethereum)
   .settings(
     name := "cryptosis-testkit",
     libraryDependencies ++= Seq(
@@ -101,5 +100,5 @@ lazy val testKit = (project in file("testKit"))
   )
 
 lazy val root = (project in file("."))
-  .dependsOn(core, oracles, providers, exchanges, contracts)
+  .dependsOn(core, oracles, providers, exchanges, ethereum)
   .settings(name := "cryptosis")

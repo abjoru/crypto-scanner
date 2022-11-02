@@ -28,3 +28,4 @@ http-client.private.env.json
 project/metals.sbt
 node_modules
 cache
+artifacts

@@ -12,11 +12,10 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.protocol.http.HttpService
 
 class Web3Env(val web3: Web3j, fromAddress: Address):
-  val txManager = ReadonlyTransactionManager(web3, fromAddress)
-  val gasProvider: ContractGasProvider = DefaultGasProvider()
+  val txManager   = ReadonlyTransactionManager(web3, fromAddress)
+  val gasProvider = DefaultGasProvider()
 
 object Web3Env:
 
   def build(fromAddress: Address, nodeUri: Uri): Web3Env =
-    val web3 = Web3j.build(new HttpService(nodeUri.toString))
-    Web3Env(web3, fromAddress)
+    Web3Env(Web3j.build(new HttpService(nodeUri.toString)), fromAddress)
