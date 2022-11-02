@@ -5,7 +5,7 @@ import sbt._
 object CodeGen {
 
   def genSequence(baseDir: File, indices: Seq[Int], baseFilename: String)(gen: Int => String): Seq[File] = indices.map { i =>
-    val file = baseDir / "com" / "bjoru" / "cryptosis" / "ethabi" / "types" / "generated" / s"$baseFilename$i.scala"
+    val file = baseDir / "com" / "bjoru" / "cryptosis" / "abi" / "generated" / s"$baseFilename$i.scala"
     if (file.exists) {
       file
     } else {
@@ -15,31 +15,34 @@ object CodeGen {
   }
 
   def genBytesN(n: Int): String = 
-    s"""package com.bjoru.cryptosis.ethabi.types.generated
+    s"""package com.bjoru.cryptosis.abi.generated
        |
-       |import com.bjoru.cryptosis.ethabi.types.*
-       |import com.bjoru.cryptosis.ethabi.utils.Hex
+       |import com.bjoru.cryptosis.abi.*
+       |import com.bjoru.cryptosis.utils.Hex
        |
        |final class Bytes${n}(val value: Array[Byte]) extends SolType:
        |  assert(value.length <= $n)
+       |  val name: String = "bytes$n"
+       |  val static: Boolean = true
        |
        |object Bytes${n}:
        |
-       |  given TypeInfo[Bytes${n}] with
-       |    extension (b: Bytes${n})
-       |      def name = "bytes${n}"
-       |      def isStatic = true
-       |      def encode[U >: Bytes${n}](value: U) = StaticBytes.encode(value.asInstanceOf[Bytes${n}].value, 1)
-       |      def decode(bytes: Array[Byte], position: Int) = (Bytes${n}(StaticBytes.decode(bytes, $n, position)), 32)
+       |  given SolEncoder[Bytes$n] = SolEncoder.instance { t =>
+       |    StaticBytes.encode(v.value, $n)
+       |  }
+       |
+       |  given SolDecoder[Bytes$n] = SolDecoder.instance { (a, b) =>
+       |    (Bytes$n(StaticBytes.decode(a, $n, b)), 32)
+       |  }
        |
        |  def apply(value: Array[Byte]): Bytes${n} = new Bytes${n}(value)
        |  def fromString(str: String): Bytes${n} = apply(Hex.hex2Bytes(str))
        |""".stripMargin
 
   def genIntN(n: Int): String =
-    s"""package com.bjoru.cryptosis.ethabi.types.generated
+    s"""package com.bjoru.cryptosis.abi.generated
        |
-       |import com.bjoru.cryptosis.ethabi.types.*
+       |import com.bjoru.cryptosis.abi.*
        |
        |final class Int${n}(val value: BigInt) extends SolType:
        |  assert(value.bitLength <= $n)
@@ -59,9 +62,9 @@ object CodeGen {
        |""".stripMargin
 
   def genUintN(n: Int): String = 
-    s"""package com.bjoru.cryptosis.ethabi.types.generated
+    s"""package com.bjoru.cryptosis.abi.generated
        |
-       |import com.bjoru.cryptosis.ethabi.types.*
+       |import com.bjoru.cryptosis.abi.*
        |
        |final class Uint$n(val value: BigInt) extends SolType:
        |  assert(value.bitLength <= $n)

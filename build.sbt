@@ -62,8 +62,8 @@ lazy val ethereum = (project in file("contracts/ethereum"))
       "org.web3j" % "core" % web3jVersion
     ),
     web3Contracts := Seq(
-      "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-      "contracts/mc/View.sol"
+      "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      //"contracts/mc/View.sol"
     )
   )
 
