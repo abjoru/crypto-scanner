@@ -1,0 +1,33 @@
+
+package com.bjoru.cryptosis
+package abi
+package generated
+
+[1..22#final case class TupleType1[[#T1 <: SolType#]]([#_1: T1#]) extends TupleType:
+  //val name: String = "tuple"
+  //val static: Boolean = [#_1.static# && ]
+  def toSeq: Seq[SolType] = Seq([#_1#])
+  override def toString = toSeq.mkString("[", ", ", "]")
+#
+]
+
+[1..22#object TupleType1:
+
+  given [[#T1 <: SolType#]](using [#e1: SolEncoder[T1]#]): SolEncoder[TupleType1[[#T1#]]] = 
+    SolEncoder.instance { t =>
+      val params = Seq([#t._1#])
+      val encoded = Seq([#e1.encode(t._1)#])
+      TupleType.encode(params, encoded)
+    }
+
+  given [[#T1 <: SolType#]](using [#e1: SolDecoder[T1]#]): SolDecoder[TupleType1[[#T1#]]] =
+    SolDecoder.instance { (bytes, position) =>
+      val params = Seq([#e1#])
+      val (results, consumed) = TupleType.decode(bytes, position, params)
+      (TupleType1[[#T1#]]([#results(0).asInstanceOf[T1]#]), consumed)
+    }
+
+  // create from list
+  def from[[#T1 <: SolType#]](values: Seq[SolType]): TupleType1[[#T1#]] = TupleType1([#values(0).asInstanceOf[T1]#])
+#
+]

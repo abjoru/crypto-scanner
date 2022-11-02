@@ -1,8 +1,12 @@
 package com.bjoru.cryptosis.abi
 
-trait TypeInfo[+T <: Solidity]:
-  extension (t: T)
-    def name: String
-    def isStatic: Boolean
-    def encode[U >: T](value: U): Array[Byte]
-    def decode(bytes: Array[Byte], position: Int): (T, Int)
+trait TypeInfo[T <: SolType]:
+  def name: String
+  def static: Boolean
+
+object TypeInfo:
+
+  def instance[T <: SolType](nameValue: String, staticValue: Boolean): TypeInfo[T] =
+    new TypeInfo[T]:
+      def name = nameValue
+      def static = staticValue

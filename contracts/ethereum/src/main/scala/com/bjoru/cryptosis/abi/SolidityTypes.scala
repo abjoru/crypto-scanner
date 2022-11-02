@@ -7,21 +7,43 @@ import com.bjoru.cryptosis.abi.generated.*
 
 import java.math.BigInteger
 
-// Marker interface
-trait SolType:
-  val name: String
-  val static: Boolean
+val maxBitLength = 256
+val maxByteLength = 32
 
-enum Solidity(name: String, static: Boolean) extends SolType:
-  case Address(value: Array[Byte]) extends Solidity("address", true)
-  case Bool(value: Boolean)        extends Solidity("bool", true)
+def paddedBytes(value: BigInt): Array[Byte] =
+  val padded = if value.signum == -1 then 0xff else 0x00
+  Array.fill[Byte](maxByteLength)(padded.toByte)
+
+// Marker interface
+trait SolType
+
+enum Solidity extends SolType:
+  case Address(value: Array[Byte])
+  case Bool(value: Boolean)
+  case DynamicArray[T <: SolType](value: Seq[T])
 
 object Solidity:
 
   given Show[Solidity] = Show.show {
     case Address(v) => v.toString
     case Bool(v)    => v.toString
+    case DynamicArray(v) => v.mkString("[", ", ", "]")
   }
+
+  ////////////////
+  // TypeInfo's //
+  ////////////////
+
+  given TypeInfo[Address] = TypeInfo.instance("address", true)
+
+  given TypeInfo[Bool] = TypeInfo.instance("bool", true)
+
+  given [T <: SolType](using e: TypeInfo[T]): TypeInfo[DynamicArray[T]] =
+    TypeInfo.instance(s"${e.name}[]", false)
+
+  /////////////////////////
+  // Encoders & Decoders //
+  /////////////////////////
 
   given (using e: SolEncoder[Uint160]): SolEncoder[Address] = 
     SolEncoder.instance(t => e.encode(Uint160(BigInt(new BigInteger(t.value)))))
@@ -32,31 +54,21 @@ object Solidity:
       (Address(result.value.toByteArray), consumed)
     }
 
-  /*
-  given (using e: TypeInfo[Uint160]): TypeInfo[Address] with
-    extension (t: Address)
-      def name = "address"
-      def isStatic = true
-      def encode[U >: Address](a: U) = 
-        e.encode(Uint160(BigInt(new BigInteger(a.asInstanceOf[Address].value))))
-      def decode(bytes: Array[Byte], position: Int) = 
-        val (result, consumed) = e.decode(bytes, position)
-        (Address(result.value.toByteArray), consumed)
+  given (using e: SolEncoder[Uint8]): SolEncoder[Bool] = SolEncoder.instance {
+    case Bool(true)  => e.encode(Uint8(BigInt(1)))
+    case Bool(false) => e.encode(Uint8(BigInt(0)))
+  }
 
-  given (using e: TypeInfo[Uint8]): TypeInfo[Bool] with
-    extension (t: Bool)
-      def name = "bool"
-      def isStatic = true
-      def encode[U >: Bool](a: U) = 
-        if a.asInstanceOf[Bool].value
-          then e.encode(Uint8(BigInt(1)))
-          else e.encode(Uint8(BigInt(0)))
-      def decode(bytes: Array[Byte], position: Int) =
-        val (result, consumed) = e.decode(bytes, position)
-        if result.value.toInt == 1
-          then (Bool(true), consumed)
-          else (Bool(false), consumed)
-          */
+  given (using e: SolDecoder[Uint8]): SolDecoder[Bool] = SolDecoder.instance { (a, b) =>
+    val (result, consumed) = e.decode(a, b)
+    if result.value.toInt == 1
+      then (Bool(true), consumed)
+      else (Bool(false), consumed)
+  }
+
+  //////////////////
+  // Constructors //
+  //////////////////
 
   def addressOf(str: String): Address = Address(Hex.hex2Bytes(str))
 

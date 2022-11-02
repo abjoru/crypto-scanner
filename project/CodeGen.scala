@@ -27,12 +27,11 @@ object CodeGen {
        |
        |object Bytes${n}:
        |
-       |  given SolEncoder[Bytes$n] = SolEncoder.instance { t =>
-       |    StaticBytes.encode(v.value, $n)
-       |  }
+       |  given SolEncoder[Bytes$n] = 
+       |    SolEncoder.instance(t => SolEncoder.staticBytes(t.value, $n))
        |
-       |  given SolDecoder[Bytes$n] = SolDecoder.instance { (a, b) =>
-       |    (Bytes$n(StaticBytes.decode(a, $n, b)), 32)
+       |  given SolDecoder[Bytes$n] = SolDecoder.instance { (a, b) => 
+       |    (Bytes$n(SolDecoder.staticBytes(a, $n, b)), 32)
        |  }
        |
        |  def apply(value: Array[Byte]): Bytes${n} = new Bytes${n}(value)
@@ -44,18 +43,22 @@ object CodeGen {
        |
        |import com.bjoru.cryptosis.abi.*
        |
+       |import java.math.BigInteger
+       |
        |final class Int${n}(val value: BigInt) extends SolType:
        |  assert(value.bitLength <= $n)
+       |  val name: String = "int$n"
+       |  val static: Boolean = true
        |  override def toString = value.toString
        |
        |object Int${n}:
        |
-       |  given TypeInfo[Int$n] with
-       |    extension (i: Int$n)
-       |      def name = "int$n"
-       |      def isStatic = true
-       |      def encode[U >: Int$n](value: U) = IntType.encode(value.asInstanceOf[Int$n].value)
-       |      def decode(bytes: Array[Byte], position: Int) = (Int$n(IntType.decode(bytes, $n, position)), 32)
+       |  given SolEncoder[Int$n] = 
+       |    SolEncoder.instance(t => SolEncoder.intType(t.value))
+       |
+       |  given SolDecoder[Int$n] = SolDecoder.instance { (a, b) => 
+       |    (Int$n(SolDecoder.intType(a, $n, b)), 32)
+       |  }
        |
        |  def apply(value: BigInt): Int$n = new Int$n(value)
        |  def fromString(str: String): Int$n = apply(BigInt(str))
@@ -66,18 +69,22 @@ object CodeGen {
        |
        |import com.bjoru.cryptosis.abi.*
        |
+       |import java.math.BigInteger
+       |
        |final class Uint$n(val value: BigInt) extends SolType:
        |  assert(value.bitLength <= $n)
+       |  val name: String = "uint$n"
+       |  val static: Boolean = true
        |  override def toString = value.toString
        |
        |object Uint$n:
        |
-       |  given TypeInfo[Uint$n] with
-       |    extension (i: Uint$n)
-       |      def name = "uint$n"
-       |      def isStatic = true
-       |      def encode[U >: Uint$n](value: U) = UintType.encode(value.asInstanceOf[Uint$n].value)
-       |      def decode(bytes: Array[Byte], position: Int) = (Uint$n(UintType.decode(bytes, $n, position)), 32)
+       |  given SolEncoder[Uint$n] = 
+       |    SolEncoder.instance(t => SolEncoder.uintType(t.value))
+       |
+       |  given SolDecoder[Uint$n] = SolDecoder.instance { (a, b) => 
+       |    (Uint$n(SolDecoder.uintType(a, $n, b)), 32)
+       |  }
        |
        |  def apply(value: BigInt): Uint$n = new Uint$n(value)
        |  def fromString(str: String): Uint$n = apply(BigInt(str))
