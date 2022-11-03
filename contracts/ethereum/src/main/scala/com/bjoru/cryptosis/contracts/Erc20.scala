@@ -9,10 +9,13 @@ import com.bjoru.cryptosis.types.*
 import org.web3j.protocol.core.RemoteFunctionCall
 import com.bjoru.cryptosis.contracts.gen.ERC20
 
-object Erc20 extends ContractApi[gen.ERC20]:
+object Erc20 extends ContractApi[ERC20]:
 
   protected def build(contract: Address, env: Web3Env): ERC20 = 
-    gen.ERC20.load(contract.toString, env.web3, env.txManager, env.gasProvider)
+    ERC20.load(contract.toString, env.web3, env.txManager, env.gasProvider)
+
+  def syncBalance(token: Token)(using Web3Env): IO[Token] =
+    balanceOf(token).map(token.withBalance)
 
   def balanceOf(token: Token)(using Web3Env): IO[Balance] = token.contract match
     case Some(a) =>

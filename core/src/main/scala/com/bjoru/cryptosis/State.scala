@@ -11,10 +11,6 @@ import com.bjoru.cryptosis.types.*
 
 import scala.concurrent.duration.*
 
-trait Oracle:
-  def fetchTokens(file: FilePath)(using Client[IO]): IO[Map[Id, Token]]
-  def fetchPrices(tokens: Seq[Token])(using Client[IO]): IO[Map[Id, Price]]
-
 final case class State private(
   tokens: Map[Id, Token],
   oracleTokens: Map[Id, Token],

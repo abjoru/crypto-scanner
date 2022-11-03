@@ -29,3 +29,5 @@ project/metals.sbt
 node_modules
 cache
 artifacts
+/contracts/ethereum/migrations/
+/contracts/ethereum/test/

@@ -24,9 +24,9 @@ object Web3Plugin extends AutoPlugin {
   override def requires: Plugins = plugins.JvmPlugin
 
   object autoImport {
-    val web3Contracts = settingKey[Seq[String]]("List of contract paths to generate")
+    val web3Contracts   = settingKey[Seq[String]]("List of contract paths to generate")
     val web3Packagename = settingKey[String]("Base package name for generated resources")
-    val web3Generate  = taskKey[Seq[File]]("Generates Java wrappers for contracts")
+    val web3Generate    = taskKey[Seq[File]]("Generates Java wrappers for contracts")
   }
 
   import autoImport._
@@ -49,19 +49,7 @@ object Web3Plugin extends AutoPlugin {
       generateWrappers(contracts, env)
     },
 
-    Compile / sourceGenerators += web3Generate.taskValue,
-    Compile / sourceGenerators += Def.task {
-      val baseDir = (Compile / sourceManaged).value
-
-      val intSeq = Seq(8, 16, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232)
-      val uintSeq = intSeq ++ Seq(240, 248, 256)
-
-      val seq1 = CodeGen.genSequence(baseDir, (0 to 32).toSeq, "Byets")(CodeGen.genBytesN)
-      val seq2 = CodeGen.genSequence(baseDir, intSeq, "Int")(CodeGen.genIntN)
-      val seq3 = CodeGen.genSequence(baseDir, uintSeq, "Uint")(CodeGen.genUintN)
-
-      seq1 ++ seq2 ++ seq3
-    }
+    Compile / sourceGenerators += web3Generate.taskValue
   )
 
   private def compileContracts(contracts: Seq[EthContract], env: GenEnv): Unit = {
@@ -73,7 +61,6 @@ object Web3Plugin extends AutoPlugin {
       if (!contract.abiPath.toFile.exists) {
         contract.getOutputFiles.get.foreach { f =>
           val outputFile = f.outputFile.toFile
-          env.logger.info(s"writing file: $outputFile")
           outputFile.getParentFile.mkdirs
           IO.write(outputFile, f.contents)
         }
@@ -118,11 +105,6 @@ final case class EthContract(inputPath: String, env: GenEnv) {
 
   lazy val abiPath: Path = outputPath(".abi")
   lazy val binPath: Path = outputPath(".bin")
-
-  //lazy val packageName: String = {
-    //val tail = inputPath.split(File.separatorChar).dropRight(1).mkString(".")
-    //s"${env.packageBasename}.${tail}".replaceAllLiterally("@", "")
-  //}
 
   lazy val javaOutputDir: Path = 
     env.sourceManaged.resolve(env.packageBasename.split('.').mkString(File.separator))
