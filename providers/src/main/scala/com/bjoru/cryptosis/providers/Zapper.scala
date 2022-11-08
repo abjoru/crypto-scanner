@@ -78,15 +78,15 @@ class ZapperResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
 
   def withData(extras: Seq[SyncData]): SyncResponse = ZapperResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]): Response[(State, Wallet)] =
+  def syncWallet(wallet: Wallet)(using Client[IO]) =
     case SyncData(_, _, jsons) => 
-      for res <- IO.fromEither(jsons.traverse(_.as[ZapperResult]))
+      for res <- jsons.traverse(_.as[ZapperResult]).toSIO
           grp  = reduce(res)
           tok  = grp.map(_.tokens).reduce(_ ++ _)
           dap  = grp.map(_.apps).reduce(_ ++ _)
-          rs1  = state.resolveAllWithPrice(tok.map(v => v._1 -> v._2))
-          rs2  = rs1._1.resolveAllApps(dap)
-      yield rs2._1 -> wallet.addBalances(rs1._2: _*).addBalances(rs2._2: _*)
+          rs1 <- State.resolveAllWithPrice(tok.map(v => v.token -> v.price))
+          rs2 <- State.resolveAllApps(dap)
+      yield wallet.addBalances(rs1: _*).addBalances(rs2: _*)
 
   private def reduce(data: Seq[ZapperResult]): Seq[ZapperResult] =
     data.groupBy(_.chain).foldLeft(Seq.empty[ZapperResult]) {

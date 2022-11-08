@@ -50,14 +50,14 @@ class ElrondResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse =
     ElrondResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", jsons) =>
-      for toks <- jsons.traverse(_.as[(Token, Option[Price])]).toIO
-          reg   = state.resolveAllWithPrice(toks.map(v => v._1 -> v._2.getOrElse(Price.Zero)))
-      yield reg._1 -> wallet.addBalances(reg._2: _*)
+      for toks <- SIO.liftF(jsons.traverse(_.as[(Token, Option[Price])]).toIO)
+          res  <- State.resolveAllWithPrice(toks.map(t => t._1 -> t._2.getOrElse(Price.Zero)))
+      yield wallet.addBalances(res: _*)
 
     case SyncData(_, "egld", Seq(json)) =>
-      for tok <- IO.pure(state.bluechip(Chain.Elrond))
-          res <- json.hcursor.downField("balance").as[String].toIO
-          bal <- Balance.convert(tok._2.decimals, res).toIO
-      yield tok._1 -> wallet.addBalances(tok._2)
+      for tok <- State.bluechip(Chain.Elrond)
+          res <- SIO.liftF(json.hcursor.downField("balance").as[String].toIO)
+          bal <- SIO.liftF(Balance.convert(tok.decimals, res).toIO)
+      yield wallet.addBalances(tok.withBalance(bal))

@@ -41,6 +41,9 @@ object SIO:
   def set(e: State): SIO[Unit] = StateT.set(e)
   def setF(ioe: IO[State]): SIO[Unit] = StateT.setF(ioe)
 
+  def fromTry[T](v: Try[T]): SIO[T] = SIO.liftF(IO.fromTry(v))
+  def fromOption[T](v: Option[T])(orElse: => Throwable): SIO[T] = liftF(IO.fromOption(v)(orElse))
+
 enum Xdg:
   case Data
   case Config
@@ -106,11 +109,13 @@ extension [T](t: Try[T])
   def toIO: IO[T] = t match
     case Success(a) => IO.pure(a)
     case Failure(e) => IO.raiseError(e)
+  def toSIO: SIO[T] = SIO.liftF(t.toIO)
 
 extension [T](t: Either[Throwable, T])
   def toIO: IO[T] = t match
     case Right(a) => IO.pure(a)
     case Left(er) => IO.raiseError(Exception(er.getMessage.take(500)))
+  def toSIO: SIO[T] = SIO.liftF(t.toIO)
 
 extension [T](t: Option[T])
   def toCirce: Result[T] =
@@ -120,6 +125,7 @@ extension [T](t: Option[T])
   def toIO: IO[T] = t match
     case Some(a) => IO.pure(a)
     case None    => IO.raiseError(Exception("Empty field!"))
+  def toSIO: SIO[T] = SIO.liftF(t.toIO)
 
 /////////////////
 // Typeclasses //

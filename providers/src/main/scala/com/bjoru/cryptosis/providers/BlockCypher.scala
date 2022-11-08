@@ -39,9 +39,9 @@ class BlockChainResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse = 
     BlockChainResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", Seq(json)) =>
-      for rst <- IO.pure(state.bluechip(wallet.chain))
-          num <- json.hcursor.downField("balance").as[BigInt].toIO
-          bal <- Balance.convert(rst._2.decimals, num).toIO
-      yield rst._1 -> wallet.addBalances(rst._2.withBalance(bal))
+      for tok <- State.bluechip(wallet.chain)
+          num <- SIO.liftF(json.hcursor.downField("balance").as[BigInt].toIO)
+          bal <- SIO.liftF(Balance.convert(tok.decimals, num).toIO)
+      yield wallet.addBalances(tok.withBalance(bal))

@@ -25,15 +25,15 @@ object Env:
     SIO.inspect(_.valueOf(exchange))
 
   def bluechip(chain: Chain): SIO[Token] = 
-    SIO(s => IO.pure(s.bluechip(chain)))
+    State.bluechip(chain)
 
   def resolve(token: Token): SIO[Token] =
-    SIO(s => IO.pure(s.resolve(token)))
+    State.resolve(token)
 
   def resolveAll(tokens: Seq[Token]): SIO[Seq[Token]] =
-    SIO(s => IO.pure(s.resolveAll(tokens)))
+    State.resolveAll(tokens)
 
   def syncPrices(using Client[IO]): SIO[Unit] = 
-    SIO.modifyF(_.syncPrices)
+    State.syncPrices
 
-  def saveAll: SIO[Unit] = SIO.inspectF(_.saveAll)
+  def saveAll: SIO[Unit] = State.save

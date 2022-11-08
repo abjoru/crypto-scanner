@@ -58,32 +58,28 @@ class SolscanResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   def withData(extras: Seq[SyncData]): SyncResponse = 
     SolscanResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "sol", Seq(json)) =>
-      for tok <- IO.pure(state.bluechip(Chain.Solana))
-          lam <- json.hcursor.downField("lamports").as[BigDecimal].toIO
+      for tok <- State.bluechip(Chain.Solana)
+          lam <- json.hcursor.downField("lamports").as[BigDecimal].toSIO
           bal  = Balance(lam / LAMPORTS_PR_SOL)
-      yield tok._1 -> wallet.addBalances(tok._2.withBalance(bal))
+      yield wallet.addBalances(tok.withBalance(bal))
 
     case SyncData(_, "bal", jsons) =>
-      for sym <- jsons.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)).toIO
-          res <- sym.filter(_._2.isDefined).traverse(_._1.as[Token]).toIO
-          reg  = state.resolveAll(res)
-      yield reg._1 -> wallet.addBalances(reg._2: _*)
+      for sym <- jsons.traverse(j => j.hcursor.downField("tokenSymbol").as[Option[Symbol]].map(j -> _)).toSIO
+          tok <- sym.filter(_._2.isDefined).traverse(_._1.as[Token]).toSIO
+          res <- State.resolveAll(tok)
+      yield wallet.addBalances(res: _*)
 
     case SyncData(_, "stake", Seq(json)) =>
-      IO.pure(json.hcursor.keys.map(_.head)).flatMap(parseStake(state, wallet, json))
-
-  def parseStake(
-    state: State,
-    w: Wallet, 
-    json: Json
-  )(key: Option[String])(using Client[IO]): IO[(State, Wallet)] = key match
-    case Some(k) =>
-      for a <- json.hcursor.downField(k).as[Json].toIO
-          b <- a.hcursor.downField("amount").as[String].toIO
-          c  = state.bluechip(Chain.Solana)
-          d  = Balance(BigDecimal(b) / LAMPORTS_PR_SOL)
-          f  = c._2.withBalance(d)
-      yield c._1 -> w.addBalances(Defi.Stake("solscan-sol-staking", "Solana Staking", Chain.Solana, Seq(f)))
-    case None => IO.pure(state -> w)
+      SIO.pure(json.hcursor.keys.map(_.head)).flatMap {
+        case Some(key) =>
+          for a <- json.hcursor.downField(key).as[Json].toSIO
+              b <- a.hcursor.downField("amount").as[String].toSIO
+              c <- State.bluechip(Chain.Solana)
+              d  = Balance(BigDecimal(b) / LAMPORTS_PR_SOL)
+              s  = Defi.Stake("solscan-sol-staking", "Solana Staking", Chain.Solana, Seq(c.withBalance(d)))
+          yield wallet.addBalances(s)
+        case None =>
+          SIO.pure(wallet)
+      }

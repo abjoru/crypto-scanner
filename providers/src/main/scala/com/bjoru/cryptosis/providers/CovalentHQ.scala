@@ -81,23 +81,24 @@ class CovalentResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
 
   def withData(extras: Seq[SyncData]): SyncResponse = CovalentResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]) =
+  def syncWallet(wallet: Wallet)(using Client[IO]) =
     case SyncData(_, "bal", Seq(json)) =>
-      for items <- IO.pure(json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty))
-          toks  <- items.toSeq.traverse(_.as[(Token, Option[Price])]).toIO
-          regs   = state.resolveAllWithPrice(toks.map(v => v._1 -> v._2.getOrElse(Price.Zero)))
-      yield regs._1 -> wallet.addBalances(regs._2: _*)
+      for items <- SIO.pure(json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty))
+          toks  <- SIO.liftF(items.toSeq.traverse(_.as[(Token, Option[Price])]).toIO)
+          twp    = toks.map(v => (v._1, v._2.getOrElse(Price.Zero)))
+          res   <- State.resolveAllWithPrice(twp)
+      yield wallet.addBalances(res: _*)
 
     case SyncData(_, chKey, jsons) =>
-      jsons.foldLeftM(state -> wallet) {
-        case ((st2, w), json) =>
-          for chain <- Chain.fromString(chKey).toIO
+      jsons.foldLeftM(wallet) {
+        case (acc, json) =>
+          for chain <- SIO.liftF(Chain.fromString(chKey).toIO)
               items  = json.hcursor.downField("data").downField("items").values.getOrElse(Iterable.empty)
               jsns   = items.filterNot(reject)
-              toks1 <- jsns.toSeq.traverse(_.as[(Token, Option[Price])]).toIO
+              toks1 <- SIO.liftF(jsns.toSeq.traverse(_.as[(Token, Option[Price])]).toIO)
               toks2  = toks1.map(v => (v._1.withChain(chain), v._2.getOrElse(Price.Zero)))
-              regs   = st2.resolveAllWithPrice(toks2)
-          yield regs._1 -> w.addBalances(regs._2: _*)
+              res   <- State.resolveAllWithPrice(toks2)
+          yield acc.addBalances(res: _*)
       }
 
   def reject(json: Json): Boolean = Seq(

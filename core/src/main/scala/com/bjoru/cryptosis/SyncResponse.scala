@@ -4,6 +4,7 @@ import cats.Show
 import cats.effect.IO
 import cats.syntax.show.*
 import cats.syntax.foldable.*
+import cats.syntax.traverse.*
 
 import org.http4s.client.Client
 
@@ -74,35 +75,28 @@ trait SyncResponse:
   */
 trait FoldableSyncResponse extends SyncResponse:
 
-  type Response[T] = PartialFunction[SyncData, IO[T]]
+  type Response[T] = PartialFunction[SyncData, SIO[T]]
 
-  final def syncWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = SIO { state =>
-    info("reading results...") >> wallets.foldLeftM(state -> Seq.empty[Wallet]) {
-      case ((s2, updWallets), wallet) => intSyncWallet(s2, wallet).map {
-        case (s3, updWallet) => (s3, updWallets :+ updWallet)
-      }
-    }
-  }
+  final def syncWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = 
+    for _ <- info("reading results...")
+        r <- wallets.traverse(internalSync)
+    yield r
 
-  private def info(msg: String): IO[Unit] =
-    putStrLn(f"$provider%-15s: $msg")
+  private def info(msg: String): SIO[Unit] =
+    SIO.liftF(putStrLn(f"$provider%-15s: $msg"))
 
-  private def intSyncWallet(state: State, wallet: Wallet)(using Client[IO]): IO[(State, Wallet)] = 
+  private def internalSync(wallet: Wallet)(using Client[IO]): SIO[Wallet] =
     val matchingData = data.filter(_.walletAddress == wallet.address)
 
     if matchingData.isEmpty
-      then IO.pure(state -> wallet) 
-      else matchingData.foldLeftM(state -> wallet)((a, b) => intProcessData(a._1, a._2, b))
+      then SIO.pure(wallet)
+      else processDataFor(wallet, matchingData)
 
-  private def intProcessData(
-    state: State, 
-    wallet: Wallet, 
-    item: SyncData
-  )(using Client[IO]): IO[(State, Wallet)] =
-    val func = syncWallet(state, wallet).orElse { _ =>
-      info(s"WARNING: No handler for ${item.show}") >> IO.pure(state -> wallet)
+  private def processDataFor(wallet: Wallet, data: Seq[SyncData])(using Client[IO]): SIO[Wallet] =
+    val func = syncWallet(wallet).orElse { item => 
+      info(s"WARNING: no handler for ${item.show}").map(_ => wallet)
     }
-    //(_ => IO.pure(state -> wallet))
-    func(item)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]): Response[(State, Wallet)]
+    data.foldLeftM(wallet)((acc, item) => func(item).map(acc.merge))
+
+  def syncWallet(wallet: Wallet)(using Client[IO]): Response[Wallet]

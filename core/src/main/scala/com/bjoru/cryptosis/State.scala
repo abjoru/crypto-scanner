@@ -1,6 +1,8 @@
 package com.bjoru.cryptosis
 
 import cats.effect.IO
+import cats.syntax.traverse.*
+import cats.syntax.foldable.*
 
 import io.circe.*
 import io.circe.syntax.*
@@ -47,44 +49,6 @@ object State:
 
   extension (s: State)
 
-    def resolve(token: Token): (State, Token) = 
-      s.tokens.get(token.id) match
-        case Some(t) => s -> t.basedOn(token)
-        case None    => resolveFromOracle(token, s)
-
-    def resolveAll(tokens: Seq[Token]): (State, Seq[Token]) =
-      tokens.foldLeft(s -> Seq.empty[Token]) {
-        case ((s2, tx), t) => s2.resolve(t) match
-          case (s3, t2) => s3 -> (tx :+ t2)
-      }
-
-    def resolveAllWithPrice(tokens: Seq[(Token, Price)]): (State, Seq[Token]) =
-      tokens.foldLeft(s -> Seq.empty[Token]) {
-        case ((s2, tx), (t, p)) => 
-          val (s3, t2) = s2.resolve(t)
-          val (s4, t3) = s3.registerPrice(t2, p)
-          s4 -> (tx :+ t3)
-      }
-
-    def resolveApp(dapp: Defi): (State, Defi) = dapp match
-      case a: Defi.Stake =>
-        val (s2, ts) = s.resolveAll(a.liquidity)
-        s2 -> a.copy(liquidity = ts)
-      case a: Defi.Farm =>
-        val (s2, lq) = s.resolveAll(a.liquidity)
-        val (s3, cl) = s2.resolveAll(a.claimable)
-        s3 -> a.copy(liquidity = lq, claimable = cl)
-      case a: Defi.Pool =>
-        val (s2, lq) = s.resolveAll(a.liquidity)
-        val (s3, pt) = s2.resolve(a.poolToken)
-        s3 -> a.copy(liquidity = lq, poolToken = pt)
-
-    def resolveAllApps(dapps: Seq[Defi]): (State, Seq[Defi]) =
-      dapps.foldLeft(s -> Seq.empty[Defi]) {
-        case ((s2, ds), d) => s2.resolveApp(d) match
-          case (s3, d2) => s3 -> (ds :+ d2)
-      }
-
     def priceOf(token: Token): Price = 
       s.prices.get(token.id).getOrElse(Price.Zero)
 
@@ -112,46 +76,103 @@ object State:
 
       pl.sum
 
-    def bluechip(chain: Chain): (State, Token) = 
-      val id = Token.mkId(chain.symbol, chain)
-      s.tokens.get(id) match
-        case Some(t) => s -> t
-        case None =>
-          val bc = s.oracleTokens(id)
-          updateTokens(Seq(bc)) -> bc
-
-    def exchangeToken(tok: ExchangeToken): (State, Token) =
-      s.tokens.get(tok.id) match
-        case Some(t) => s -> t.withBalance(tok.balance)
-        case None =>
-          val bc = s.oracleTokens(tok.id)
-          updateTokens(Seq(bc)) -> bc.withBalance(tok.balance)
-
-    def exchangeTokens(pairs: Seq[ExchangeToken]): (State, Seq[Token]) =
-      pairs.foldLeft(s -> Seq.empty[Token]) {
-        case ((s2, acc), tok) => 
-          val (s3, to) = s2.exchangeToken(tok)
-          s3 -> (acc :+ to.withBalance(tok.balance))
-      }
-
-    def syncPrices(using Client[IO]): IO[State] = 
-      s.oracle.fetchPrices(s.tokens.values.toSeq).map { result =>
-        s.copy(prices = s.prices ++ result)
-      }
-
-    def registerPrice(token: Token, price: Price): (State, Token) =
-      s.copy(prices = s.prices + (token.id -> price)) -> token
-
-    def updateTokens(tx: Seq[Token]): State =
-      s.copy(tokens = s.tokens ++ tx.map(t => t.id -> t).toMap)
-
-    def updateUnknowns(tx: Seq[Token]): State =
-      s.copy(unknownTokens = s.unknownTokens ++ tx.map(t => t.id -> t).toMap)
-
     def saveAll: IO[Unit] = 
       for _ <- saveJson(s.fTokens, s.tokens.values.toSeq)
           _ <- saveJson(s.fUnknowns, s.unknownTokens.values.toSeq)
       yield ()
+
+  ///////////////////
+  // State Actions //
+  ///////////////////
+
+  def resolve(token: Token): SIO[Token] = 
+    SIO.inspect(_.tokens.get(token.id)).flatMap {
+      case Some(t) => SIO.pure(t.basedOn(token))
+      case None    => resolveFromOracle(token)
+    }
+
+  def resolveAll(tokens: Seq[Token]): SIO[Seq[Token]] =
+    tokens.traverse(resolve) // FIXME not sure this properly threads state!
+
+  def resolveAllWithPrice(tokens: Seq[(Token, Price)]): SIO[Seq[Token]] =
+    tokens.traverse {
+      case (token, price) =>
+        for a <- resolve(token)
+            b <- registerPrice(a, price)
+        yield b
+    }
+
+  def resolveApp(dapp: Defi): SIO[Defi] = dapp match
+    case a: Defi.Stake =>
+      resolveAll(a.liquidity).map(v => a.copy(liquidity = v))
+    case a: Defi.Farm =>
+      for x <- resolveAll(a.liquidity)
+          y <- resolveAll(a.claimable)
+      yield a.copy(liquidity = x, claimable = y)
+    case a: Defi.Pool =>
+      for x <- resolve(a.poolToken)
+          y <- resolveAll(a.liquidity)
+      yield a.copy(poolToken = x, liquidity = y)
+
+  def resolveAllApps(dapps: Seq[Defi]): SIO[Seq[Defi]] =
+    dapps.traverse(resolveApp)
+
+  def resolveExchangeToken(token: ExchangeToken): SIO[Token] =
+    SIO.inspect(_.tokens.get(token.id)).flatMap {
+      case Some(t) => SIO.pure(t.withBalance(token.balance))
+      case None =>
+        for a <- SIO.inspect(_.oracleTokens(token.id))
+            b <- updateToken(a)
+        yield b
+    }
+
+  def resolveExchangeTokens(tokens: Seq[ExchangeToken]): SIO[Seq[Token]] =
+    tokens.traverse(resolveExchangeToken)
+
+  private def resolveFromOracle(token: Token): SIO[Token] = 
+    SIO.inspect(_.oracleTokens.get(token.id)).flatMap {
+      case Some(t) => updateToken(t.basedOn(token))
+      case None    => updateUnknown(token)
+    }
+
+  def registerPrice(token: Token, price: Price): SIO[Token] = SIO { s =>
+    IO.pure(s.copy(prices = s.prices + (token.id -> price)) -> token)
+  }
+
+  def bluechip(chain: Chain): SIO[Token] = 
+    val id = Token.mkId(chain.symbol, chain)
+    SIO.inspect(_.tokens.get(id)).flatMap {
+      case Some(t) => SIO.pure(t)
+      case None    => 
+        for a <- SIO.inspect(_.oracleTokens(id))
+            b <- updateToken(a)
+        yield b
+    }
+
+  def updateToken(token: Token): SIO[Token] = SIO { s =>
+    IO.pure(s.copy(tokens = s.tokens.updated(token.id, token)) -> token)
+  }
+
+  def updateTokens(tokens: Seq[Token]): SIO[Seq[Token]] = SIO { s =>
+    IO.pure(s.copy(tokens = s.tokens ++ tokens.map(t => t.id -> t).toMap) -> tokens)
+  }
+
+  def updateUnknown(token: Token): SIO[Token] = SIO { s =>
+    IO.pure(s.copy(unknownTokens = s.unknownTokens.updated(token.id, token)) -> token)
+  }
+
+  def updateUnknowns(tokens: Seq[Token]): SIO[Seq[Token]] = SIO { s =>
+    IO.pure(s.copy(unknownTokens = s.unknownTokens ++ tokens.map(t => t.id -> t).toMap) -> tokens)
+  }
+
+  def syncPrices(using Client[IO]): SIO[Unit] = SIO.modifyF { state =>
+    state.oracle.fetchPrices(state.tokens.values.toSeq).map { result =>
+      state.copy(prices = state.prices ++ result)
+    }
+  }
+
+  def save: SIO[Unit] = SIO.inspectF(_.saveAll)
+
 
   def apply(
     tokensFile: FilePath,
@@ -180,10 +201,11 @@ object State:
       then oracle.fetchTokens(file)
       else loadJson[Seq[Token]](file).map(_.map(t => t.id -> t).toMap)
 
-  private def resolveFromOracle(token: Token, state: State): (State, Token) =
-    state.oracleTokens.get(token.id) match
-      case Some(t) => 
-        val tout = t.basedOn(token)
-        state.updateTokens(Seq(tout)) -> tout
-      case None => 
-        state.updateUnknowns(Seq(token)) -> token
+
+  //private def resolveFromOracle(token: Token, state: State): (State, Token) =
+    //state.oracleTokens.get(token.id) match
+      //case Some(t) => 
+        //val tout = t.basedOn(token)
+        //state.updateTokens(Seq(tout)) -> tout
+      //case None => 
+        //state.updateUnknowns(Seq(token)) -> token

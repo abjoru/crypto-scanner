@@ -45,7 +45,7 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi(ExchangeName.BinanceUS):
         url <- SIO.liftF(mkBalanceUri(ts))
         get <- SIO.liftF(mkGet(url))
         tok <- SIO.liftF(client.expect[Seq[ExchangeToken]](get))
-        res <- SIO(s => IO.pure(s.exchangeTokens(tok)))
+        res <- State.resolveExchangeTokens(tok)
     yield res
 
   private def signature(timestamp: Long) = 
