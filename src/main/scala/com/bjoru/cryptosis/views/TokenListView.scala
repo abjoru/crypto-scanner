@@ -10,9 +10,9 @@ object TokenListView:
 
   def render(wallets: Seq[Wallet], filterDust: Boolean = true): SIO[Unit] = SIO.inspect { state =>
     priceTokens(state, collectTokens(wallets), filterDust).sortBy(_._1.chain).foreach {
-      case (Token(_, _, s, c, _, _, b), v) => 
+      case (Token(_, _, s, c, x, _, b), v) => 
         val bal = s"${b.show} $s"
-        println(f"$c%-10s $bal%-20s = ${v.show}%10s")
+        println(f"$c%-10s $bal%-20s = ${v.show}%10s ${x.map(y => s"($y)").getOrElse("")}")
     }
   }
 

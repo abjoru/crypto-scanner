@@ -14,7 +14,7 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
-class ElrondApi(ep: Endpoint) extends ProviderApi("elrond"):
+class ElrondApi(ep: Endpoint) extends ProviderApi(ProviderName.Elrond):
 
   protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
     for wx   <- IO.pure(wallets.filter(_.chain == Chain.Elrond))
@@ -44,6 +44,8 @@ class ElrondResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
         p <- Balance.convert(c, d).toCirce(hc)
     yield (Token(a.toLowerCase, a, b, Chain.Elrond, None, c, p), e)
   }
+
+  val provider: ProviderName = ProviderName.Elrond
 
   def withData(extras: Seq[SyncData]): SyncResponse =
     ElrondResponse(data ++ extras)

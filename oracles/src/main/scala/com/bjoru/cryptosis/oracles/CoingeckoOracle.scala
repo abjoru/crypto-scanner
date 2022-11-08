@@ -43,7 +43,7 @@ class CoingeckoOracle extends Oracle:
 
   def fetchPrices(tokens: Seq[Token])(using client: Client[IO]): IO[Map[Id, Price]] =
     for url <- IO.pure(priceUri +? ("ids", tokens.map(_.geckoId).mkString(",")) +? ("vs_currencies", "usd"))
-        _   <- putStrLn(s"coingecko: $url")
+        //_   <- putStrLn(s"coingecko: $url")
         jsn <- client.expect[Json](url)
         ids  = jsn.hcursor.keys.getOrElse(Iterable.empty).toSeq
         gpr <- ids.traverse(g => jsn.hcursor.downField(g).downField("usd").as[Option[Price]].map(g -> _)).toIO
@@ -63,6 +63,10 @@ class CoingeckoOracle extends Oracle:
       // Bluechip
       case (acc, GToken(id@"bitcoin", name, sym@Symbol.Btc, _)) =>
         acc :+ Token(id, name, sym, Chain.Bitcoin, None, 8, Balance.Zero)
+      case (acc, GToken(id@"bitcoin-cash", name, sym@Symbol.Bch, _)) =>
+        acc :+ Token(id, name, sym, Chain.BitcoinCash, None, 8, Balance.Zero)
+      case (acc, GToken(id@"bitcoin-cash-sv", name, sym@Symbol.Bsv, _)) =>
+        acc :+ Token(id, name, sym, Chain.BitcoinSV, None, 8, Balance.Zero)
       case (acc, GToken(id@"dogecoin", name, sym@Symbol.Doge, _)) =>
         acc :+ Token(id, name, sym, Chain.Dogecoin, None, 8, Balance.Zero)
       case (acc, GToken(id@"solana", name, sym@Symbol.Sol, _)) =>

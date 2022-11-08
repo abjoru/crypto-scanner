@@ -66,6 +66,25 @@ object State:
           s4 -> (tx :+ t3)
       }
 
+    def resolveApp(dapp: Defi): (State, Defi) = dapp match
+      case a: Defi.Stake =>
+        val (s2, ts) = s.resolveAll(a.liquidity)
+        s2 -> a.copy(liquidity = ts)
+      case a: Defi.Farm =>
+        val (s2, lq) = s.resolveAll(a.liquidity)
+        val (s3, cl) = s2.resolveAll(a.claimable)
+        s3 -> a.copy(liquidity = lq, claimable = cl)
+      case a: Defi.Pool =>
+        val (s2, lq) = s.resolveAll(a.liquidity)
+        val (s3, pt) = s2.resolve(a.poolToken)
+        s3 -> a.copy(liquidity = lq, poolToken = pt)
+
+    def resolveAllApps(dapps: Seq[Defi]): (State, Seq[Defi]) =
+      dapps.foldLeft(s -> Seq.empty[Defi]) {
+        case ((s2, ds), d) => s2.resolveApp(d) match
+          case (s3, d2) => s3 -> (ds :+ d2)
+      }
+
     def priceOf(token: Token): Price = 
       s.prices.get(token.id).getOrElse(Price.Zero)
 
@@ -100,6 +119,20 @@ object State:
         case None =>
           val bc = s.oracleTokens(id)
           updateTokens(Seq(bc)) -> bc
+
+    def exchangeToken(tok: ExchangeToken): (State, Token) =
+      s.tokens.get(tok.id) match
+        case Some(t) => s -> t.withBalance(tok.balance)
+        case None =>
+          val bc = s.oracleTokens(tok.id)
+          updateTokens(Seq(bc)) -> bc.withBalance(tok.balance)
+
+    def exchangeTokens(pairs: Seq[ExchangeToken]): (State, Seq[Token]) =
+      pairs.foldLeft(s -> Seq.empty[Token]) {
+        case ((s2, acc), tok) => 
+          val (s3, to) = s2.exchangeToken(tok)
+          s3 -> (acc :+ to.withBalance(tok.balance))
+      }
 
     def syncPrices(using Client[IO]): IO[State] = 
       s.oracle.fetchPrices(s.tokens.values.toSeq).map { result =>

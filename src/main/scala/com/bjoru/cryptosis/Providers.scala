@@ -19,7 +19,7 @@ object Providers:
 
   def syncAndUpdateWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = 
     for resp <- SIO.liftF(syncWallets(wallets))
-        //_    <- SIO.liftF(inspectResponses(resp))
+        _     = resp.groupBy(_.provider).mapValues(_.size).foreach(println)
         resu <- resp.foldLeftM(wallets)((wx, r) => r.syncWallets(wx))
     yield resu
 
@@ -41,6 +41,7 @@ object Providers:
       case (ProviderName.Elrond, e)      => providers.ElrondApi(e)
       case (ProviderName.Solscan, e)     => providers.Solscan(e)
       case (ProviderName.CovalentHQ, e)  => providers.CovalentHQ(e)
+      case (ProviderName.Zapper, e)      => providers.Zapper(e)
     }
 
     apis.toSeq

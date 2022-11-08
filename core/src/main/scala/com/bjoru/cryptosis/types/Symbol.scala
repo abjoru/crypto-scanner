@@ -14,7 +14,7 @@ object Symbol:
 
   given Encoder[Symbol] = Encoder.encodeString
 
-  given Decoder[Symbol] = Decoder.decodeString
+  given Decoder[Symbol] = Decoder.decodeString.map(apply)
 
   given SegmentEncoder[Symbol] = SegmentEncoder.stringSegmentEncoder
 
@@ -22,6 +22,8 @@ object Symbol:
 
   // Bluechips
   val Btc   = Symbol("btc")
+  val Bch   = Symbol("bch")
+  val Bsv   = Symbol("bsv")
   val Eth   = Symbol("eth")
   val Sol   = Symbol("sol")
   val Egld  = Symbol("egld")
@@ -39,7 +41,6 @@ object Symbol:
   val Movr  = Symbol("movr")
   val Nrg   = Symbol("nrg")
   val Cro   = Symbol("cro")
-  val Bch   = Symbol("bch")
   val Near  = Symbol("near")
 
   val Unknown = Symbol("<unknown>")

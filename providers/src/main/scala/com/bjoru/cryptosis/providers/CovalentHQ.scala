@@ -15,7 +15,7 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
-class CovalentHQ(ep: Endpoint) extends ProviderApi("covalenthq"):
+class CovalentHQ(ep: Endpoint) extends ProviderApi(ProviderName.CovalentHQ):
 
   val supportedChains = Seq(
     Chain.Ethereum,
@@ -76,6 +76,8 @@ class CovalentResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
         r <- Balance.convert(c, e).toCirce(hc)
     yield Token(a.getOrElse(b.lower), a.getOrElse(b.lower), b, Chain.Unknown, d, c, r) -> f
   }
+
+  val provider: ProviderName = ProviderName.CovalentHQ
 
   def withData(extras: Seq[SyncData]): SyncResponse = CovalentResponse(data ++ extras)
 

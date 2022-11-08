@@ -48,6 +48,8 @@ object SyncData:
 
 trait SyncResponse:
 
+  val provider: ProviderName
+
   val data: Seq[SyncData]
 
   /** Synchronize wallets with this response.
@@ -75,18 +77,21 @@ trait FoldableSyncResponse extends SyncResponse:
   type Response[T] = PartialFunction[SyncData, IO[T]]
 
   final def syncWallets(wallets: Seq[Wallet])(using Client[IO]): SIO[Seq[Wallet]] = SIO { state =>
-    wallets.foldLeftM(state -> Seq.empty[Wallet]) {
+    info("reading results...") >> wallets.foldLeftM(state -> Seq.empty[Wallet]) {
       case ((s2, updWallets), wallet) => intSyncWallet(s2, wallet).map {
         case (s3, updWallet) => (s3, updWallets :+ updWallet)
       }
     }
   }
 
+  private def info(msg: String): IO[Unit] =
+    putStrLn(f"$provider%-15s: $msg")
+
   private def intSyncWallet(state: State, wallet: Wallet)(using Client[IO]): IO[(State, Wallet)] = 
     val matchingData = data.filter(_.walletAddress == wallet.address)
 
     if matchingData.isEmpty
-      then IO.pure(state -> wallet)
+      then IO.pure(state -> wallet) 
       else matchingData.foldLeftM(state -> wallet)((a, b) => intProcessData(a._1, a._2, b))
 
   private def intProcessData(
@@ -95,8 +100,7 @@ trait FoldableSyncResponse extends SyncResponse:
     item: SyncData
   )(using Client[IO]): IO[(State, Wallet)] =
     val func = syncWallet(state, wallet).orElse { _ =>
-      println(s"WARNING: No handler for ${item.show}")
-      IO.pure(state -> wallet)
+      info(s"WARNING: No handler for ${item.show}") >> IO.pure(state -> wallet)
     }
     //(_ => IO.pure(state -> wallet))
     func(item)

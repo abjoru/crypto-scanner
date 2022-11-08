@@ -11,7 +11,7 @@ import com.bjoru.cryptosis.instances.given
 
 import scala.concurrent.duration.*
 
-trait ProviderApi(val name: String):
+trait ProviderApi(val name: ProviderName):
 
   final def update(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
     for status <- checkCaches(wallets)

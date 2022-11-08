@@ -15,7 +15,7 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
-class BlockCypher(ep: Endpoint) extends ProviderApi("blockcypher"):
+class BlockCypher(ep: Endpoint) extends ProviderApi(ProviderName.BlockCypher):
 
   val chainFilter: Wallet => Boolean = _.chain match
     case Chain.Bitcoin  => true
@@ -33,6 +33,8 @@ class BlockCypher(ep: Endpoint) extends ProviderApi("blockcypher"):
     yield SyncData(wallet.address, "bal", Seq(jsn))
 
 class BlockChainResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
+
+  override val provider: ProviderName = ProviderName.BlockCypher
 
   def withData(extras: Seq[SyncData]): SyncResponse = 
     BlockChainResponse(data ++ extras)

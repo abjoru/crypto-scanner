@@ -115,6 +115,8 @@ extension [T](t: Either[Throwable, T])
 extension [T](t: Option[T])
   def toCirce: Result[T] =
     t.fold(Left(DF("empty field!", List.empty)))(Right(_))
+  def toCirce(msg: String): Result[T] =
+    t.fold(Left(DF(msg, List.empty)))(Right(_))
   def toIO: IO[T] = t match
     case Some(a) => IO.pure(a)
     case None    => IO.raiseError(Exception("Empty field!"))

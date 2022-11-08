@@ -21,9 +21,10 @@ import com.bjoru.cryptosis.types.*
 
 import scala.io.Source
 
-class Zapper(ep: Endpoint) extends ProviderApi("zapper"):
+class Zapper(ep: Endpoint) extends ProviderApi(ProviderName.Zapper):
 
   val Auth = ep.apiKey.map(k => Authorization(BasicCredentials(k, "")))
+  val Acc  = Header("Accept", "*/*")
 
   val supportedChains = Seq(
     Chain.Ethereum,
@@ -40,15 +41,17 @@ class Zapper(ep: Endpoint) extends ProviderApi("zapper"):
     case _                                 => false
 
   protected def sync(wallets: Seq[Wallet])(using client: Client[IO]): IO[SyncResponse] =
-    for url <- IO.pure(ep.uri / "balances" +? ("addresses[]", addresses(wallets)) +? ("bundled", false))
+    for url <- uri(wallets.filter(w => supportedChains.contains(w.chain)))
         key <- IO.fromOption(Auth)(Exception(f"$name%-15s: missing api-key!"))
         _   <- putStrLn(f"$name%-15s: synchronizing wallets...")
-        txt <- client.expect[String](GET(url, key))(using EntityDecoder.text[IO])
+        txt <- client.expect[String](GET(url, Auth, Acc))(using EntityDecoder.text[IO])
         res <- processTextReply(txt)
     yield ZapperResponse(res)
 
-  private def addresses(wallets: Seq[Wallet]): String =
-    wallets.map(_.address.toString).mkString(",")
+  private def uri(wallets: Seq[Wallet]): IO[Uri] =
+    val base = (ep.uri / "balances").toString
+    val params = wallets.map(_.address.toString).mkString("&addresses[]=")
+    IO.fromEither(Uri.fromString(s"${base}?addresses[]=$params&bundled=false"))
 
   private def processTextReply(txt: String): IO[Seq[SyncData]] = 
     for lines <- IO.pure(Source.fromString(txt).getLines.filter(lineFilter).toSeq)
@@ -71,12 +74,23 @@ class ZapperResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
   import decoders.*
   import ZapperDecoders.given
 
+  val provider: ProviderName = ProviderName.Zapper
+
   def withData(extras: Seq[SyncData]): SyncResponse = ZapperResponse(data ++ extras)
 
-  def syncWallet(state: State, wallet: Wallet)(using Client[IO]): Response[(State, Wallet)] = ???
+  def syncWallet(state: State, wallet: Wallet)(using Client[IO]): Response[(State, Wallet)] =
+    case SyncData(_, _, jsons) => 
+      for res <- IO.fromEither(jsons.traverse(_.as[ZapperResult]))
+          grp  = reduce(res)
+          tok  = grp.map(_.tokens).reduce(_ ++ _)
+          dap  = grp.map(_.apps).reduce(_ ++ _)
+          rs1  = state.resolveAllWithPrice(tok.map(v => v._1 -> v._2))
+          rs2  = rs1._1.resolveAllApps(dap)
+      yield rs2._1 -> wallet.addBalances(rs1._2: _*).addBalances(rs2._2: _*)
 
   private def reduce(data: Seq[ZapperResult]): Seq[ZapperResult] =
     data.groupBy(_.chain).foldLeft(Seq.empty[ZapperResult]) {
-      case (acc, (_, xs)) => 
-        acc :+ xs.reduce((a, b) => a.copy(tokens = a.tokens ++ b.tokens, apps = a.apps ++ b.apps))
+      case (acc, (_, xs)) => acc :+ xs.reduce { (a, b) => 
+        a.copy(tokens = a.tokens ++ b.tokens, apps = a.apps ++ b.apps)
+      }
     }

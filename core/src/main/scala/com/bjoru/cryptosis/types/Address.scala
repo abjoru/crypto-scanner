@@ -20,11 +20,11 @@ object Address:
 
   given Encoder[Address] = Encoder.encodeString
 
-  given Decoder[Address] = Decoder.decodeString
+  given Decoder[Address] = Decoder.decodeString.emapTry(fromString)
 
   given SegmentEncoder[Address] = SegmentEncoder.stringSegmentEncoder
 
-  given ConfigReader[Address] = ConfigReader.stringConfigReader
+  given ConfigReader[Address] = ConfigReader.stringConfigReader.map(_.toLowerCase)
 
   given Conversion[Address, String] = v => v
 
@@ -32,7 +32,7 @@ object Address:
 
   def fromString(str: String): Try[Address] =
     if str.nonEmpty
-      then Success(str)
+      then Success(str.toLowerCase)
       else Failure(Exception("address cannot be empty!"))
 
   def unsafeFromString(str: String): Address = 

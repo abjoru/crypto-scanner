@@ -14,7 +14,7 @@ import org.http4s.circe.CirceEntityDecoder.given
 import com.bjoru.cryptosis.*
 import com.bjoru.cryptosis.types.*
 
-class Solscan(ep: Endpoint) extends ProviderApi("solscan"):
+class Solscan(ep: Endpoint) extends ProviderApi(ProviderName.Solscan):
 
   protected def sync(wallets: Seq[Wallet])(using Client[cats.effect.IO]): IO[SyncResponse] =
     for ws <- IO.pure(wallets.filter(_.chain == Chain.Solana))
@@ -50,6 +50,8 @@ class SolscanResponse(val data: Seq[SyncData]) extends FoldableSyncResponse:
         f <- Balance.convert(c, b).toCirce(hc)
     yield Token(d, d, e, Chain.Solana, Some(a), c, f)
   }
+
+  val provider: ProviderName = ProviderName.Solscan
 
   val LAMPORTS_PR_SOL = BigDecimal(1000000000.0)
 
