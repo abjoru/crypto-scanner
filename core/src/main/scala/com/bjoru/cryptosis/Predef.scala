@@ -127,6 +127,12 @@ extension [T](t: Option[T])
     case None    => IO.raiseError(Exception("Empty field!"))
   def toSIO: SIO[T] = SIO.liftF(t.toIO)
 
+extension [T](io: IO[T])
+  def withErrorHandler: IO[T] = 
+    io.handleErrorWith {
+      case err => IO.raiseError(Exception(err.getMessage.take(500)))
+    }
+
 /////////////////
 // Typeclasses //
 /////////////////

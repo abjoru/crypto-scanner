@@ -1,6 +1,6 @@
 package com.bjoru.cryptosis.types
 
-import cats.Show
+import cats.{Show, Eq}
 
 import io.circe.*
 
@@ -16,6 +16,8 @@ opaque type Address = String
 
 object Address:
 
+  given Eq[Address] = Eq.instance((a, b) => a.toLowerCase == b.toLowerCase)
+
   given Show[Address] = Show.fromToString[Address]
 
   given Encoder[Address] = Encoder.encodeString
@@ -24,7 +26,7 @@ object Address:
 
   given SegmentEncoder[Address] = SegmentEncoder.stringSegmentEncoder
 
-  given ConfigReader[Address] = ConfigReader.stringConfigReader.map(_.toLowerCase)
+  given ConfigReader[Address] = ConfigReader.stringConfigReader
 
   given Conversion[Address, String] = v => v
 
@@ -32,7 +34,7 @@ object Address:
 
   def fromString(str: String): Try[Address] =
     if str.nonEmpty
-      then Success(str.toLowerCase)
+      then Success(str)
       else Failure(Exception("address cannot be empty!"))
 
   def unsafeFromString(str: String): Address = 

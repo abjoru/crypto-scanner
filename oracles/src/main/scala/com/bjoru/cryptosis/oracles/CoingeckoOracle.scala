@@ -43,7 +43,6 @@ class CoingeckoOracle extends Oracle:
 
   def fetchPrices(tokens: Seq[Token])(using client: Client[IO]): IO[Map[Id, Price]] =
     for url <- IO.pure(priceUri +? ("ids", tokens.map(_.geckoId).mkString(",")) +? ("vs_currencies", "usd"))
-        //_   <- putStrLn(s"coingecko: $url")
         jsn <- client.expect[Json](url)
         ids  = jsn.hcursor.keys.getOrElse(Iterable.empty).toSeq
         gpr <- ids.traverse(g => jsn.hcursor.downField(g).downField("usd").as[Option[Price]].map(g -> _)).toIO
@@ -52,9 +51,9 @@ class CoingeckoOracle extends Oracle:
       yield tpr.map((a, b) => a -> b.getOrElse(Price.Zero)).toMap
 
   def fetchTokens(file: FilePath)(using client: Client[IO]): IO[Map[Id, Token]] = 
-    for data <- client.expect[Seq[GToken]](tokenUri)
+    for data <- client.expect[Seq[GToken]](tokenUri).withErrorHandler
         toks  = processTokens(data)
-        _    <- saveJson(file, toks)
+        _    <- saveJson(file, toks).withErrorHandler
     yield toks.map(t => t.id -> t).toMap
 
   private def processTokens(tokens: Seq[GToken]): Seq[Token] =

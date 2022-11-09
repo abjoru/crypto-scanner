@@ -33,8 +33,9 @@ object GToken:
       case (acc, (k, v)) if v.isNull => toChain(k).map(c => acc :+ (c -> None))
       case (acc, (k, v)) =>
         for a <- toChain(k)
-            b <- v.as[Address].toTry
-        yield acc :+ (a -> Some(b))
+            b <- v.as[String].toTry
+            c <- if b.isEmpty then Success(None) else Address.fromString(b).map(Some(_))
+        yield acc :+ (a -> c)
     }
 
     result.map(_.toMap)

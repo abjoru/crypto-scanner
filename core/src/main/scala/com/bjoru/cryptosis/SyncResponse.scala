@@ -2,6 +2,7 @@ package com.bjoru.cryptosis
 
 import cats.Show
 import cats.effect.IO
+import cats.syntax.eq.*
 import cats.syntax.show.*
 import cats.syntax.foldable.*
 import cats.syntax.traverse.*
@@ -86,7 +87,7 @@ trait FoldableSyncResponse extends SyncResponse:
     SIO.liftF(putStrLn(f"$provider%-15s: $msg"))
 
   private def internalSync(wallet: Wallet)(using Client[IO]): SIO[Wallet] =
-    val matchingData = data.filter(_.walletAddress == wallet.address)
+    val matchingData = data.filter(_.walletAddress eqv wallet.address)
 
     if matchingData.isEmpty
       then SIO.pure(wallet)

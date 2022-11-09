@@ -23,12 +23,12 @@ class BlockCypher(ep: Endpoint) extends ProviderApi(ProviderName.BlockCypher):
     case _              => false
 
   protected def sync(wallets: Seq[Wallet])(using Client[IO]): IO[SyncResponse] =
-    for _ <- putStrLn(f"$name%-15s: syncronizing wallets...")
+    for _ <- putStrLn(f"$name%-15s: synchronizing wallets...")
         b <- wallets.filter(chainFilter).traverse(balanceOf).map(BlockChainResponse(_))
     yield b
 
   def balanceOf(wallet: Wallet)(using client: Client[IO]): IO[SyncData] =
-    for url <- IO.pure(ep.uri / wallet.chain.symbol / "main" / "addrs" / wallet.address)
+    for url <- IO.pure(ep.uri / wallet.chain.symbol / "main" / "addrs" / wallet.address / "balance")
         jsn <- client.expect[Json](url)
     yield SyncData(wallet.address, "bal", Seq(jsn))
 

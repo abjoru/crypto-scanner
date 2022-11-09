@@ -48,6 +48,15 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi(ExchangeName.BinanceUS):
         res <- State.resolveExchangeTokens(tok)
     yield res
 
+  def staking(using client: Client[IO]): SIO[Seq[Defi]] =
+    for ts  <- SIO.pure(Instant.now.toEpochMilli)
+        url <- SIO.liftF(mkStakingUri(ts))
+        get <- SIO.liftF(mkGet(url))
+        jsn <- SIO.liftF(client.expect[Json](get))
+        xs  <- jsn.hcursor.downField("data").as[Seq[Json]].toSIO
+        tok <- SIO.liftF(xs.traverse(balanceTuples))
+    yield ???
+
   private def signature(timestamp: Long) = 
     for a <- IO.fromOption(ep.secret)(Exception("Missing API secret for BinanceUS!"))
         b <- HmacSha256.generate[IO](s"timestamp=$timestamp", a)
@@ -76,3 +85,8 @@ class BinanceUS(ep: Endpoint) extends ExchangeApi(ExchangeName.BinanceUS):
     }
 
     maybeChain.toCirce(s"No binance symbol/chain mapping for $symbol: $networks")
+
+  private def balanceTuples(json: Json): IO[(String, Balance)] =
+    for sym <- json.hcursor.downField("asset").as[Symbol].toIO
+        bal <- json.hcursor.downField("stakingAmount").as[Balance].toIO
+    yield SupportedStakingTokens(sym) -> bal

@@ -11,4 +11,5 @@ final case class ExchangeToken(
 object ExchangeToken:
 
   given Identity[ExchangeToken] with
-    extension (t: ExchangeToken) def id = Token.mkId(t.symbol, t.chain)
+    extension (t: ExchangeToken) 
+      def id = Token.mkId(t.symbol, t.chain)
