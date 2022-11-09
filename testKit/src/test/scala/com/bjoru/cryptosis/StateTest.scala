@@ -25,7 +25,7 @@ class StateTest extends CatsEffectSuite:
   test("Resolve known token") {
     for s <- clientR.use(State(tFile, uFile, gFile, oracle)(using _))
         t  = Token.simple("MonkeyBucks", Symbol("mbs"), Chain.Solana)
-        r  = s.resolve(t)
+        r <- State.resolve(t).runA(s)
         _ <- putStrLn(r._2.toString)
         _ <- IO(s.tokens.foreach(println))
         _ <- IO(s.oracleTokens.filter(_._2.chain == Chain.Solana).foreach(println))

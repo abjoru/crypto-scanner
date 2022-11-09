@@ -39,7 +39,7 @@ object ZapperDecoders:
         aid <- hc.downField("appId").as[String]
         net <- hc.downField("network").as[Chain]
         lbl <- hc.downField("displayProps").downField("label").as[String]
-        dap <- hc.downField("breakdown").as[Seq[Json]].flatMap(breakdowns(key, lbl, net, _))
+        dap <- hc.downField("breakdown").as[Seq[Json]].flatMap(breakdowns(key, aid, net, _))
     yield dap
   }
 
@@ -63,7 +63,9 @@ object ZapperDecoders:
   /////////////
 
   private def breakdowns(id: String, name: String, chain: Chain, data: Seq[Json]): Decoder.Result[Defi] =
-    data.traverse(breakdown).map(_.toMap match
+    val items = data.traverse(breakdown).map(_.groupMap(_._1)(_._2))
+
+    items.map(_.mapValues(_.flatten)).map {
       case e if e.contains("claimable") => Defi.Farm(
           providerId = id,
           name       = name,
@@ -77,7 +79,7 @@ object ZapperDecoders:
           chain      = chain,
           liquidity  = e.get("supplied").getOrElse(Seq.empty)
         )
-    )
+    }
 
   private def breakdown(json: Json): Decoder.Result[(String, Seq[Token])] = 
     val ident = for a <- json.hcursor.downField("contractType").as[Option[String]]

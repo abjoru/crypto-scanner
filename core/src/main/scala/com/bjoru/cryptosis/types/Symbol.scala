@@ -1,6 +1,6 @@
 package com.bjoru.cryptosis.types
 
-import cats.Show
+import cats.{Eq, Show}
 
 import io.circe.*
 
@@ -9,6 +9,8 @@ import org.http4s.Uri.Path.SegmentEncoder
 opaque type Symbol = String
 
 object Symbol:
+
+  given Eq[Symbol] = Eq.instance((a, b) => a.toLowerCase == b.toLowerCase)
 
   given Show[Symbol] = Show.show(_.upper)
 
